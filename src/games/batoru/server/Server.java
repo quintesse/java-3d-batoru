@@ -38,7 +38,7 @@ public class Server {
 		
 		NetworkClassCache cache = NetworkClassCache.getServerCache();
 		cache.registerClass("games.batoru.BatoruUniverse", "games.batoru.BatoruUniverse");
-		cache.registerClass("games.batoru.PatchyLandscapeModel", "games.batoru.PatchyLandscapeModel");
+		cache.registerClass("games.batoru.PatchyLandscape", "games.batoru.PatchyLandscape");
 		cache.registerClass("games.batoru.entities.PlayerClass", "games.batoru.shapes.PlayerShape");
 		cache.registerClass("games.batoru.entities.BulletClass", "games.batoru.shapes.BulletShape");
 		cache.registerClass("games.batoru.entities.TreeClass", "games.batoru.shapes.TreeShape");
