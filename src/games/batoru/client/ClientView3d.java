@@ -34,7 +34,7 @@ import games.batoru.shapes.PlayerShape;
 
 /**
  * @author Tako
- * @version $Revision: 50 $
+ * @version $Revision: 54 $
  */
 public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionListener, KeyListener {
 	private String m_sTitle;
@@ -65,8 +65,8 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 
 	private final Vector3f VECTF_JUMP = new Vector3f(0.0f, 15.0f, 0.0f);
 	
-	private long m_lLastSystemTime = 0;
-	private long m_lLastUpdateTime = 0;
+	private float m_fLastAge = 0;
+	private float m_fLastUpdate = 0;
 
 	protected Client m_client;
 	
@@ -380,17 +380,17 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 	}
 
 	protected void handleUniverseFrame() {
-		long lCurrentSystemTime = m_client.getUniverse().getAge();
-		if (m_lLastSystemTime > 0) {
-			float fElapsedTime = (float)(lCurrentSystemTime - m_lLastSystemTime) / 1000;
+		float fCurrentAge = m_client.getUniverse().getAge();
+		if (m_fLastAge > 0) {
+			float fElapsedTime = fCurrentAge - m_fLastAge;
 			m_client.getUniverse().handleFrame(fElapsedTime);
-			handleAvatarFrame(lCurrentSystemTime);
+			handleAvatarFrame(fCurrentAge);
 		}
-		m_lLastSystemTime = lCurrentSystemTime;
+		m_fLastAge = fCurrentAge;
 	}
 	
-	protected void handleAvatarFrame(long _lCurrentSystemTime) {
-		float fElapsedTime = (float)(_lCurrentSystemTime - m_lLastSystemTime) / 1000;
+	protected void handleAvatarFrame(float _fCurrentAge) {
+		float fElapsedTime = _fCurrentAge - m_fLastAge;
 
 		int nXMovement = 0;
 		int nZMovement = 0;
@@ -454,13 +454,13 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 			EntityBuilder.createBulletShape(m_client.getUniverse(), m_client.getAvatar().getPosition(), m_client.getAvatar().getOrientation(), 20.0f, 5.0f);
 		}
 		
-		if ((_lCurrentSystemTime - m_lLastUpdateTime) > 50) {
+		if ((_fCurrentAge - m_fLastUpdate) > 50) {
 			// Enough time has passed, let's send an update to the server
 			ClientMessageHelper.addOrientation(m_message, avatar.getOrientation());
 			ClientMessageHelper.addStateFlags(m_message, m_bFirePrimary);
 			m_serverPort.sendPacket(m_message);
 			m_serverPort.initPacket(m_message);
-			m_lLastUpdateTime = _lCurrentSystemTime;
+			m_fLastUpdate = _fCurrentAge;
 		}
 	}
 	
@@ -498,30 +498,6 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 			add(b);
 			b = new Button("Exit this program");
 			b.setBounds(5, 85, 290, 20);
-	/*
-		b.setCaptionAlignment(TextAlignment.ALIGN_CENTER);
-		// BEGIN TEST
-		b.addKeyListener(new KeyAdapter() {
-			public void keyTyped(KeyEvent _event) {
-				Button b = (Button)_event.getSource();
-				switch (_event.getKeyChar()) {
-					case 'a':
-						b.setWidth(b.getWidth() - 1);
-						break;
-					case 'd':
-						b.setWidth(b.getWidth() + 1);
-						break;
-					case 'w':
-						b.setHeight(b.getHeight() - 1);
-						break;
-					case 's':
-						b.setHeight(b.getHeight() + 1);
-						break;
-				}
-			}
-		});
-		// END TEST
-	 */
 			b.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent _event) {
 					stop();
@@ -751,6 +727,10 @@ class GearRenderer implements GLEventListener {
 
 /*
  * $Log$
+ * Revision 1.5  2003/11/18 11:06:28  tako
+ * All times and ages are now floats, no longs anymore.
+ * Removed some unused code.
+ *
  * Revision 1.4  2003/11/17 13:18:50  tako
  * Changed the setFps() method of the InfoWindow to accept floats
  * instead of Strings.
