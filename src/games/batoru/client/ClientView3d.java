@@ -20,7 +20,6 @@ import javax.swing.JFrame;
 import javax.vecmath.*;
 
 import net.java.games.jogl.*;
-import net.java.games.jogl.util.*;
 
 import org.codejive.world3d.*;
 import org.codejive.gui4gl.widgets.*;
@@ -42,8 +41,8 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 
 	private JFrame m_clientFrame;
 	private Screen m_screen;
-	private Window m_menuWindow;
-	private Window m_infoWindow;
+	private MenuWindow m_menuWindow;
+	private InfoWindow m_infoWindow;
 	private GraphicsDevice m_device;
 	private Animator m_animator;
 	
@@ -119,67 +118,11 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 		});
 
 		m_screen = new Screen();
-		m_menuWindow = new Window("Test Window");
-		m_menuWindow.setCenterParent(true);
-		m_menuWindow.setWidth(300);
-		m_menuWindow.setHeight(150);
-		Text t = new Text("Welcome to the Batoru in-game menu pop-up window");
-		t.setBounds(5, 5, 290, 40);
-		m_menuWindow.add(t);
-		Button b = new Button("Resume");
-		b.setBounds(5, 45, 290, 20);
-		b.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent _event) {
-				m_menuWindow.setVisible(false);
-			}
-		});
-		m_menuWindow.add(b);
-		b = new Button("Options");
-		b.setBounds(5, 65, 290, 20);
-		m_menuWindow.add(b);
-		b = new Button("Exit this program");
-		b.setBounds(5, 85, 290, 20);
-/*
-	b.setCaptionAlignment(TextAlignment.ALIGN_CENTER);
-	// BEGIN TEST
-	b.addKeyListener(new KeyAdapter() {
-		public void keyTyped(KeyEvent _event) {
-			Button b = (Button)_event.getSource();
-			switch (_event.getKeyChar()) {
-				case 'a':
-					b.setWidth(b.getWidth() - 1);
-					break;
-				case 'd':
-					b.setWidth(b.getWidth() + 1);
-					break;
-				case 'w':
-					b.setHeight(b.getHeight() - 1);
-					break;
-				case 's':
-					b.setHeight(b.getHeight() + 1);
-					break;
-			}
-		}
-	});
-	// END TEST
- */
-		b.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent _event) {
-				stop();
-				m_client.stop();
-			}
-		});
-		m_menuWindow.add(b);
-		m_menuWindow.addKeyListener(new KeyAdapter() {
-			public void keyPressed(KeyEvent _event) {
-				switch (_event.getKeyCode()) {
-					case KeyEvent.VK_ESCAPE:
-						m_menuWindow.setVisible(false);
-						break;
-				}
-			}
-		});
+		m_menuWindow = new MenuWindow();
 		m_screen.add(m_menuWindow);
+		m_infoWindow = new InfoWindow();
+		m_infoWindow.setVisible(true);
+		m_screen.add(m_infoWindow);
 //		canvas.addMouseListener(m_screen);
 //		canvas.addMouseMotionListener(m_screen);
 		canvas.addKeyListener(m_screen);
@@ -519,11 +462,142 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 		}
 	}
 	
+	public void updateInfo(float _fFps) {
+		NumberFormat nf = NumberFormat.getNumberInstance();
+		nf.setMinimumFractionDigits(1);
+		nf.setMaximumFractionDigits(1);
+		Float f = new Float(_fFps);
+
+		m_infoWindow.setFps(nf.format(f));
+		m_infoWindow.setObjectCount(String.valueOf(m_client.getUniverse().getRenderablesList().size()));
+		m_infoWindow.setLiveCount(String.valueOf(m_client.getUniverse().getLiveEntitiesList().size()));
+		m_infoWindow.setMortalCount(String.valueOf(m_client.getUniverse().getTerminalEntitiesList().size()));
+	}
+
 	public Screen getGUI() {
 		return m_screen;
 	}
-}
 
+	class MenuWindow extends Window {
+		public MenuWindow() {
+			super("Test Window");
+			setCenterParent(true);
+			setWidth(300);
+			setHeight(150);
+		
+			Text t = new Text("Welcome to the Batoru in-game menu pop-up window");
+			t.setBounds(5, 5, 290, 40);
+			add(t);
+			Button b = new Button("Resume");
+			b.setBounds(5, 45, 290, 20);
+			b.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent _event) {
+					m_menuWindow.setVisible(false);
+				}
+			});
+			add(b);
+			b = new Button("Options");
+			b.setBounds(5, 65, 290, 20);
+			add(b);
+			b = new Button("Exit this program");
+			b.setBounds(5, 85, 290, 20);
+	/*
+		b.setCaptionAlignment(TextAlignment.ALIGN_CENTER);
+		// BEGIN TEST
+		b.addKeyListener(new KeyAdapter() {
+			public void keyTyped(KeyEvent _event) {
+				Button b = (Button)_event.getSource();
+				switch (_event.getKeyChar()) {
+					case 'a':
+						b.setWidth(b.getWidth() - 1);
+						break;
+					case 'd':
+						b.setWidth(b.getWidth() + 1);
+						break;
+					case 'w':
+						b.setHeight(b.getHeight() - 1);
+						break;
+					case 's':
+						b.setHeight(b.getHeight() + 1);
+						break;
+				}
+			}
+		});
+		// END TEST
+	 */
+			b.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent _event) {
+					stop();
+					m_client.stop();
+				}
+			});
+			add(b);
+			addKeyListener(new KeyAdapter() {
+				public void keyPressed(KeyEvent _event) {
+					switch (_event.getKeyCode()) {
+						case KeyEvent.VK_ESCAPE:
+							Window w = (Window)_event.getSource();
+							w.setVisible(false);
+							break;
+					}
+				}
+			});
+		}
+	}
+
+	class InfoWindow extends Window {
+		Text m_fps, m_objectCount, m_liveCount, m_mortalCount;
+	
+		public InfoWindow() {
+			setBounds(10, -110, 150, 100);
+			setFocusable(false);
+		
+			Text t = new Text("FPS");
+			t.setBounds(5, 5, 75, 20);
+			add(t);
+			m_fps = new Text("?");
+			m_fps.setBounds(80, 5, 50, 20);
+			add(m_fps);
+
+			t = new Text("#objects");
+			t.setBounds(5, 25, 75, 20);
+			add(t);
+			m_objectCount = new Text("?");
+			m_objectCount.setBounds(80, 25, 50, 20);
+			add(m_objectCount);
+
+			t = new Text("#live");
+			t.setBounds(5, 45, 75, 20);
+			add(t);
+			m_liveCount = new Text("?");
+			m_liveCount.setBounds(80, 45, 50, 20);
+			add(m_liveCount);
+
+			t = new Text("#mortal");
+			t.setBounds(5, 65, 75, 20);
+			add(t);
+			m_mortalCount = new Text("?");
+			m_mortalCount.setBounds(80, 65, 50, 20);
+			add(m_mortalCount);
+		}
+	
+		public void setFps(String _sFps) {
+			m_fps.setText(_sFps);
+		}
+	
+		public void setObjectCount(String _sCount) {
+			m_objectCount.setText(_sCount);
+		}
+	
+		public void setLiveCount(String _sCount) {
+			m_liveCount.setText(_sCount);
+		}
+	
+		public void setMortalCount(String _sCount) {
+			m_mortalCount.setText(_sCount);
+		}
+	}
+}
 
 class GearRenderer implements GLEventListener {
 	private ClientView3d m_view;
@@ -568,6 +642,15 @@ class GearRenderer implements GLEventListener {
 //		gl.glEnable(GL.GL_LIGHTING);
 
 		m_context = new RenderContext(gl, glu);
+		m_context.setTexture(0, "games/batoru/textures/grass_03.jpg");
+
+//		gl.glTexParameteri(GL.GL_TEXTURE_2D,GL.GL_TEXTURE_MIN_FILTER,GL.GL_NEAREST);
+//		gl.glTexParameteri(GL.GL_TEXTURE_2D,GL.GL_TEXTURE_MAG_FILTER,GL.GL_NEAREST);
+//		gl.glTexParameteri(GL.GL_TEXTURE_2D,GL.GL_TEXTURE_MIN_FILTER,GL.GL_LINEAR);
+//		gl.glTexParameteri(GL.GL_TEXTURE_2D,GL.GL_TEXTURE_MAG_FILTER,GL.GL_LINEAR);
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_NEAREST);
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+
 		m_universeRenderer = new UniverseRenderer(m_context, m_universe, m_avatar);
 		m_universeRenderer.initRendering(m_context);
 
@@ -623,16 +706,15 @@ class GearRenderer implements GLEventListener {
 			
 		gl.glPopMatrix();
 
-		renderFrameRate(m_context, m_frameRateCounter.getFrameRate());
+		m_view.updateInfo(m_frameRateCounter.getFrameRate());
 		
 		m_view.getGUI().render(m_context);
-		
-//		try { Thread.currentThread().sleep(0, 1000); } catch (Exception e) {}
 	}
 
 	public void displayChanged(GLDrawable drawable, boolean modeChanged, boolean deviceChanged) {
 	}
-		
+
+/*		
 	private void renderFrameRate(RenderContext _context, float _fFps) {
 		GL gl = _context.getGl();
 
@@ -661,4 +743,5 @@ class GearRenderer implements GLEventListener {
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		gl.glPopMatrix (); 		
 	}
+*/
 }
