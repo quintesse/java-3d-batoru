@@ -41,8 +41,8 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 
 	private JFrame m_clientFrame;
 	private Screen m_screen;
-	private MenuWindow m_menuWindow;
-	private InfoWindow m_infoWindow;
+	protected MenuWindow m_menuWindow;
+	protected InfoWindow m_infoWindow;
 	private GraphicsDevice m_device;
 	private Animator m_animator;
 	
@@ -66,11 +66,10 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 	private long m_lLastSystemTime = 0;
 	private long m_lLastUpdateTime = 0;
 
-	private Client m_client;
+	protected Client m_client;
 	
 	private MessagePort m_serverPort;
 	private MessagePacket m_message;
-	private int m_nEmptyMessageSize;
 	
 	// These are only here to supposedly speed things up a bit	
 	private Matrix3f m_viewMatrix = new Matrix3f();
@@ -172,7 +171,6 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 		m_serverPort = m_client.getMessagePort();
 		m_message = new MessagePacket();
 		m_serverPort.initPacket(m_message);
-		m_nEmptyMessageSize = m_message.getSize();
 		
 		m_animator = new Animator(canvas);
 		m_animator.start();
@@ -262,12 +260,14 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 	 * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
 	 */
 	public void mouseEntered(MouseEvent arg0) {
+		// Not needed (yet)
 	}
 
 	/* (non-Javadoc)
 	 * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
 	 */
 	public void mouseExited(MouseEvent arg0) {
+		// Not needed (yet)
 	}
 
 	/* (non-Javadoc)
@@ -327,6 +327,7 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 	}
 		
 	public void keyTyped(KeyEvent _event) {
+		// Not needed
 	}
 		
 	private void handleKey(KeyEvent _event) {
@@ -448,7 +449,7 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 
 		// TODO Testing purposes only!!!!
 		if (m_bFirePrimary) {
-			Shape bullet = EntityBuilder.createBulletShape(m_client.getUniverse(), m_client.getAvatar().getPosition(), m_client.getAvatar().getOrientation(), 20.0f, 5.0f);
+			EntityBuilder.createBulletShape(m_client.getUniverse(), m_client.getAvatar().getPosition(), m_client.getAvatar().getOrientation(), 20.0f, 5.0f);
 		}
 		
 		if ((_lCurrentSystemTime - m_lLastUpdateTime) > 50) {
@@ -457,7 +458,6 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 			ClientMessageHelper.addStateFlags(m_message, m_bFirePrimary);
 			m_serverPort.sendPacket(m_message);
 			m_serverPort.initPacket(m_message);
-			m_nEmptyMessageSize = m_message.getSize();
 			m_lLastUpdateTime = _lCurrentSystemTime;
 		}
 	}
@@ -651,7 +651,7 @@ class GearRenderer implements GLEventListener {
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_NEAREST);
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
 
-		m_universeRenderer = new UniverseRenderer(m_context, m_universe, m_avatar);
+		m_universeRenderer = new UniverseRenderer(m_universe, m_avatar);
 		m_universeRenderer.initRendering(m_context);
 
 		m_frameRateCounter = new SimpleFrameRateCounter();
@@ -712,6 +712,7 @@ class GearRenderer implements GLEventListener {
 	}
 
 	public void displayChanged(GLDrawable drawable, boolean modeChanged, boolean deviceChanged) {
+		// Not needed
 	}
 
 /*		
