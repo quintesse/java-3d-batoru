@@ -48,9 +48,6 @@ public class BatoruUniverse extends Universe {
 		PatchyLandscape landscape = new PatchyLandscape();
 		setLandscape(landscape);
 		landscape.netInit(_reader);
-		
-		PatchyLandscapeRenderer lrenderer = new PatchyLandscapeRenderer(this, landscape);
-		addRenderable(lrenderer);
 	}
 
 	/* (non-Javadoc)
