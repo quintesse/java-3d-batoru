@@ -10,7 +10,6 @@ import org.codejive.world3d.loaders.md3.MD3Loader;
 import org.codejive.world3d.net.MessageReader;
 import org.codejive.world3d.net.NetworkDecoder;
 import org.codejive.utils4gl.*;
-import org.codejive.utils4gl.GLColor;
 
 import games.batoru.entities.Player;
 
@@ -23,8 +22,6 @@ public class PlayerShape extends Shape implements Renderable, Player, NetworkDec
 	private MD3Loader m_lara;
 	private int m_nLocomotionState;
 	private int m_nActionState;
-	
-	private static final GLColor m_avatarColor = new GLColor(0.3f, 0.3f, 0.3f);
 	
 	public float getEyeHeight() {
 		return m_fEyeHeight;

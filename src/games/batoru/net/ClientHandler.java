@@ -16,7 +16,6 @@ import java.net.Socket;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 
-import org.codejive.world3d.Entity;
 import org.codejive.world3d.SurfaceInformation;
 import org.codejive.world3d.Universe;
 import org.codejive.world3d.net.*;
@@ -128,7 +127,7 @@ public class ClientHandler extends ConnectedMessagePort {
 					byte nFlags = _packet.readByte();
 					if ((nFlags & ClientMessageHelper.STATE_FIREPRIMARY) != 0) {
 						Universe.log(this, "client holds down the primary fire button");
-						Entity bullet = EntityBuilder.createBullet(m_server.getUniverse(), m_avatar.getPosition(), m_avatar.getOrientation(), 20.0f, 5.0f);
+						EntityBuilder.createBullet(m_server.getUniverse(), m_avatar.getPosition(), m_avatar.getOrientation(), 20.0f, 5.0f);
 // TODO This code shouldn't be here!!!!!!!!!! Testing purposes only!!!!
 //						initPacket(m_message);
 //						ServerMessageHelper.addSpawn(m_message, bullet);
