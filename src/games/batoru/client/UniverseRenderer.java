@@ -27,7 +27,7 @@ public class UniverseRenderer implements Renderable {
 	
 	private boolean m_bReadyForRendering;
 	
-	public UniverseRenderer(RenderContext _context, Universe _universe, Shape _avatar) {
+	public UniverseRenderer(Universe _universe, Shape _avatar) {
 		m_universe = _universe;
 		m_avatar = _avatar;
 
