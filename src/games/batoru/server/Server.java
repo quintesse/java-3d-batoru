@@ -14,7 +14,6 @@ import org.codejive.world3d.net.MessagePort;
 import org.codejive.world3d.net.NetworkClassCache;
 
 import games.batoru.*;
-import games.batoru.client.PatchyLandscapeRenderer;
 import games.batoru.entities.*;
 import games.batoru.net.*;
 
