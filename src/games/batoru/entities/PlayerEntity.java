@@ -26,9 +26,11 @@ public class PlayerEntity extends Entity implements Player, LiveEntity, NetworkE
 	}
 	
 	public void setLocomotionState(int _nState) {
+		// Unused on the client side
 	}
 	
 	public void setActionState(int _nState) {
+		// Unused on the client side
 	}
 
 	public void updateState() {
@@ -36,6 +38,7 @@ public class PlayerEntity extends Entity implements Player, LiveEntity, NetworkE
 	}
 
 	public void heartbeat(long _time) {
+		// Unused on the client side
 	}
 	
 	/* (non-Javadoc)
