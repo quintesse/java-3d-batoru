@@ -46,26 +46,23 @@ public class UniverseRenderer implements Renderable {
 	public void render(RenderContext _context) {
 		GL gl = _context.getGl();
 
-//		Matrix3f orient = m_avatar.getOrientation();
-//		if (drawable == m_canvas2) {
-//			orient = new Matrix3f();
-//			orient.sub(m_avatar.getOrientation());
-//		}
-//		gl.glLoadMatrixf(GLUtils.getGLMatrix(orient));
-
-		gl.glTranslatef(0.0f, -0.0f, -5.0f);
-
-		Vector3f orientation = m_avatar.getOrientation();
-		gl.glRotatef(-orientation.x, 1.0f, 0.0f, 0.0f);
-		gl.glRotatef(-orientation.z, 0.0f, 0.0f, 1.0f);
-
-		gl.glPushMatrix();
-		m_avatar.render(_context);
-		gl.glPopMatrix();
-
-		gl.glRotatef(-orientation.y, 0.0f, 1.0f, 0.0f);
-
 		Point3f pos = m_avatar.getPosition();
+		Vector3f orientation = m_avatar.getOrientation();
+		if (false) {
+			// First person
+			gl.glRotatef(-orientation.x, 1.0f, 0.0f, 0.0f);
+			gl.glRotatef(-orientation.z, 0.0f, 0.0f, 1.0f);
+			gl.glRotatef(-orientation.y, 0.0f, 1.0f, 0.0f);
+		} else {
+			// Third person
+			gl.glTranslatef(0.0f, -0.0f, -5.0f);
+			gl.glRotatef(-orientation.x, 1.0f, 0.0f, 0.0f);
+			gl.glRotatef(-orientation.z, 0.0f, 0.0f, 1.0f);
+			gl.glPushMatrix();
+			m_avatar.render(_context);
+			gl.glPopMatrix();
+			gl.glRotatef(-orientation.y, 0.0f, 1.0f, 0.0f);
+		}
 		gl.glTranslatef(-pos.x, -(pos.y + ((Player)m_avatar).getEyeHeight()), -pos.z);
 
 		gl.glPushMatrix();
