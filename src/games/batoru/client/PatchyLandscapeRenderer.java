@@ -60,6 +60,7 @@ public class PatchyLandscapeRenderer implements Renderable {
 			gl.glEnd();
 //			gl.glDisable(GL.GL_BLEND);
 		} else {
+			gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			gl.glBegin(GL.GL_TRIANGLE_STRIP);
 			gl.glCallList(m_nTerrainList);
 			gl.glEnd();
