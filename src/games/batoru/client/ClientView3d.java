@@ -13,7 +13,9 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Robot;
 import java.awt.Toolkit;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.text.NumberFormat;
 
 import javax.swing.JFrame;
@@ -23,20 +25,26 @@ import net.java.games.jogl.*;
 import net.java.games.jogl.util.GLUT;
 
 import org.codejive.world3d.*;
+import org.codejive.gui4gl.events.GuiActionEvent;
+import org.codejive.gui4gl.events.GuiActionListener;
+import org.codejive.gui4gl.events.GuiKeyAdapter;
+import org.codejive.gui4gl.events.GuiKeyEvent;
+import org.codejive.gui4gl.events.GuiKeyListener;
+import org.codejive.gui4gl.events.GuiMouseEvent;
+import org.codejive.gui4gl.events.GuiMouseListener;
 import org.codejive.gui4gl.widgets.*;
 import org.codejive.world3d.net.*;
 import org.codejive.utils4gl.*;
 
 import games.batoru.EntityBuilder;
-import games.batoru.entities.Player;
+import games.batoru.entities.PlayerEntity;
 import games.batoru.net.ClientMessageHelper;
-import games.batoru.shapes.PlayerShape;
 
 /**
  * @author Tako
- * @version $Revision: 54 $
+ * @version $Revision: 175 $
  */
-public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionListener, KeyListener {
+public class ClientView3d implements NetworkDecoder, GuiMouseListener, GuiKeyListener {
 	private String m_sTitle;
 	private int m_nWidth, m_nHeight;
 	private boolean m_bFullscreen;
@@ -108,8 +116,8 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 		m_clientFrame.getContentPane().add(canvas, BorderLayout.CENTER);
 
 		canvas.addGLEventListener(renderer);
-		canvas.addMouseListener(this);
-		canvas.addMouseMotionListener(this);
+//		canvas.addMouseListener(this);
+//		canvas.addMouseMotionListener(this);
 //		canvas.addKeyListener(this);
 		m_clientFrame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
@@ -124,12 +132,11 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 		m_infoWindow = new InfoWindow();
 		m_infoWindow.setVisible(true);
 		m_screen.add(m_infoWindow);
-//		canvas.addMouseListener(m_screen);
-//		canvas.addMouseMotionListener(m_screen);
 		canvas.addKeyListener(m_screen);
-//		m_screen.addMouseListener(this);
-//		m_screen.addMouseMotionListener(this);
+		canvas.addMouseListener(m_screen);
+		canvas.addMouseMotionListener(m_screen);
 		m_screen.addKeyListener(this);
+		m_screen.addMouseListener(this);
 
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		m_clientFrame.setSize(m_nWidth, m_nHeight);
@@ -251,50 +258,31 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 		return displayModeToUse;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
-	 */
-	public void mouseClicked(MouseEvent arg0) {
+	public void mouseClicked(GuiMouseEvent arg0) {
 		grabMouse();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
-	 */
-	public void mouseEntered(MouseEvent arg0) {
-		// Not needed (yet)
+	public void mousePressed(GuiMouseEvent arg0) {
+		if (m_bGrabMouse) {
+			m_bFirePrimary = true;
+		}
 	}
 
-	/* (non-Javadoc)
-	 * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
-	 */
-	public void mouseExited(MouseEvent arg0) {
-		// Not needed (yet)
+	public void mouseReleased(GuiMouseEvent arg0) {
+		if (m_bGrabMouse) {
+			m_bFirePrimary = false;
+		}
 	}
 
-	/* (non-Javadoc)
-	 * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
-	 */
-	public void mousePressed(MouseEvent arg0) {
-		m_bFirePrimary = true;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
-	 */
-	public void mouseReleased(MouseEvent arg0) {
-		m_bFirePrimary = false;
-	}
-
-	public void mouseDragged(MouseEvent _event) {
+	public void mouseDragged(GuiMouseEvent _event) {
 		handleMouseMove(_event);
 	}
 
-	public void mouseMoved(MouseEvent _event) {
+	public void mouseMoved(GuiMouseEvent _event) {
 		handleMouseMove(_event);
 	}
 		
-	private void handleMouseMove(MouseEvent _event) {
+	private void handleMouseMove(GuiMouseEvent _event) {
 		if (m_bGrabMouse) {
 			double motionDelay = 0.5;
 	
@@ -304,14 +292,12 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 			m_fRotY -= (_event.getX() - nCenterX + 4) * motionDelay;
 			m_fRotX -= (_event.getY() - nCenterY + 30) * motionDelay;
 
-			Shape avatar = m_client.getAvatar();
+			Entity avatar = m_client.getAvatar();
 
 			// Retrieve the current orientation vector from the avatar
 			Vector3f orientation = avatar.getOrientation();
-			// Set its new values
-			orientation.x = m_fRotX;
-			orientation.y = m_fRotY;
-			orientation.z = 0;
+			// Rotate a unit vector pointing towards negative Z
+			Vectors.rotateVector(Vectors.VECTF_IN, m_fRotX, m_fRotY, 0, orientation);
 			// Tell the entity we changed some of its parameters
 			avatar.updateState();
 	
@@ -320,20 +306,20 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 		}
 	}
 	
-	public void keyPressed(KeyEvent _event) {
+	public void keyPressed(GuiKeyEvent _event) {
 		handleKey(_event);
 	}
 		
-	public void keyReleased(KeyEvent _event) {
+	public void keyReleased(GuiKeyEvent _event) {
 		handleKey(_event);
 	}
 		
-	public void keyTyped(KeyEvent _event) {
+	public void keyTyped(GuiKeyEvent _event) {
 		// Not needed
 	}
 		
-	private void handleKey(KeyEvent _event) {
-		boolean bDown = (_event.getID() == KeyEvent.KEY_PRESSED) || (_event.getID() == KeyEvent.KEY_TYPED);
+	private void handleKey(GuiKeyEvent _event) {
+		boolean bDown = (_event.getId() == KeyEvent.KEY_PRESSED) || (_event.getId() == KeyEvent.KEY_TYPED);
 		switch (_event.getKeyCode()) {
 			case KeyEvent.VK_LEFT:
 				m_bKeyLeft = bDown;
@@ -402,11 +388,11 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 		nZMovement += (m_bKeyForward) ? -1 : 0;
 		nZMovement += (m_bKeyBackward) ? 1 : 0;
 
-		PlayerShape avatar = (PlayerShape)m_client.getAvatar();
+		PlayerEntity avatar = (PlayerEntity)m_client.getAvatar();
 
 		// Check if the player wants to jump and if it is possible
 		float fGravFactor = avatar.getGravityFactor();
-		if (m_bKeyJump && (Math.abs(fGravFactor) > Universe.ALMOST_ZERO) && ((PlayerShape)avatar).isOnSurface()) {
+		if (m_bKeyJump && (Math.abs(fGravFactor) > Universe.ALMOST_ZERO) && ((PlayerEntity)avatar).isOnSurface()) {
 			Vector3f jump = new Vector3f(avatar.getImpulse());
 			jump.add(VECTF_JUMP);
 			avatar.setImpulse(jump);
@@ -419,7 +405,7 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 			// Make sure it's length is 1.0
 			movement.normalize();
 			// Scale the vector according to speed and elapsed time
-			float fSpeed = (((PlayerShape)avatar).isOnSurface()) ? m_fSurfaceSpeed : m_fAirSpeed;
+			float fSpeed = (((PlayerEntity)avatar).isOnSurface()) ? m_fSurfaceSpeed : m_fAirSpeed;
 			movement.scale(fSpeed / 10 * fElapsedTime);		// In Java3D a unit is 10m
 
 			// Rotate the movement vector so its translation is relative to the view port 
@@ -444,17 +430,22 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 			avatar.setPosition(v);
 			avatar.updateState();
 			
-			avatar.setLocomotionState(Player.LOC_RUNNING);
+			avatar.setLocomotionState(PlayerEntity.LOC_RUNNING);
 		} else {
-			avatar.setLocomotionState(Player.LOC_IDLE);
+			avatar.setLocomotionState(PlayerEntity.LOC_IDLE);
 		}
 
 		// TODO Testing purposes only!!!!
 		if (m_bFirePrimary) {
-			EntityBuilder.createBulletShape(m_client.getUniverse(), m_client.getAvatar().getPosition(), m_client.getAvatar().getOrientation(), 20.0f, 5.0f);
+System.err.println("avatar: " + m_client.getAvatar().getPosition() + " - " + m_client.getAvatar().getOrientation());
+//			EntityBuilder.createBulletShape(m_client.getUniverse(), m_client.getAvatar().getPosition(), m_client.getAvatar().getOrientation(), 20.0f, 5.0f);
+			Vector3f impulse = m_client.getAvatar().getOrientation();
+			Point3f p = new Point3f(m_client.getAvatar().getPosition());
+			p.y += 1.0f;
+			EntityBuilder.createBullet(m_client.getUniverse(), p, impulse, 20.0f, 5.0f);
 		}
 		
-		if ((_fCurrentAge - m_fLastUpdate) > 50) {
+		if ((_fCurrentAge - m_fLastUpdate) > 0.02f) {
 			// Enough time has passed, let's send an update to the server
 			ClientMessageHelper.addOrientation(m_message, avatar.getOrientation());
 			ClientMessageHelper.addStateFlags(m_message, m_bFirePrimary);
@@ -464,11 +455,14 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 		}
 	}
 	
-	public void updateInfo(float _fFps) {
+	public void updateInfo(float _fFps, PhysicalEntity _avatar) {
 		m_infoWindow.setFps(_fFps);
 		m_infoWindow.setObjectCount(String.valueOf(m_client.getUniverse().getRenderablesList().size()));
 		m_infoWindow.setLiveCount(String.valueOf(m_client.getUniverse().getLiveEntitiesList().size()));
 		m_infoWindow.setMortalCount(String.valueOf(m_client.getUniverse().getTerminalEntitiesList().size()));
+		m_infoWindow.setPosition(_avatar.getPosition());
+		m_infoWindow.setOrientation(_avatar.getOrientation());
+		m_infoWindow.setImpulse(_avatar.getImpulse());
 	}
 
 	public Screen getGUI() {
@@ -487,8 +481,8 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 			add(t);
 			Button b = new Button("Resume");
 			b.setBounds(5, 45, 290, 20);
-			b.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent _event) {
+			b.addActionListener(new GuiActionListener() {
+				public void actionPerformed(GuiActionEvent _event) {
 					m_menuWindow.setVisible(false);
 				}
 			});
@@ -498,31 +492,37 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 			add(b);
 			b = new Button("Exit this program");
 			b.setBounds(5, 85, 290, 20);
-			b.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent _event) {
+			b.addActionListener(new GuiActionListener() {
+				public void actionPerformed(GuiActionEvent _event) {
 					stop();
 					m_client.stop();
 				}
 			});
 			add(b);
-			addKeyListener(new KeyAdapter() {
-				public void keyPressed(KeyEvent _event) {
+			addKeyListener(new GuiKeyAdapter() {
+				public void keyPressed(GuiKeyEvent _event) {
 					switch (_event.getKeyCode()) {
 						case KeyEvent.VK_ESCAPE:
-							Window w = (Window)_event.getSource();
-							w.setVisible(false);
+							m_menuWindow.setVisible(false);
 							break;
 					}
+					_event.consume();
 				}
 			});
 		}
 	}
 
 	class InfoWindow extends Window {
+		NumberFormat m_nf;
 		Text m_fps, m_objectCount, m_liveCount, m_mortalCount;
+		Text m_position, m_orientation, m_impulse;
 	
 		public InfoWindow() {
-			setBounds(10, -110, 150, 100);
+			m_nf = NumberFormat.getNumberInstance();
+			m_nf.setMinimumFractionDigits(1);
+			m_nf.setMaximumFractionDigits(1);
+
+			setBounds(10, -140, 180, 130);
 			setFocusable(false);
 		
 			Text t = new Text("FPS");
@@ -540,26 +540,44 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 			add(m_objectCount);
 
 			t = new Text("#live");
-			t.setBounds(5, 45, 75, 20);
+			t.setBounds(5, 40, 75, 20);
 			add(t);
 			m_liveCount = new Text("?");
-			m_liveCount.setBounds(80, 45, 50, 20);
+			m_liveCount.setBounds(80, 40, 50, 20);
 			add(m_liveCount);
 
 			t = new Text("#mortal");
-			t.setBounds(5, 65, 75, 20);
+			t.setBounds(5, 55, 75, 20);
 			add(t);
 			m_mortalCount = new Text("?");
-			m_mortalCount.setBounds(80, 65, 50, 20);
+			m_mortalCount.setBounds(80, 55, 50, 20);
 			add(m_mortalCount);
+
+			t = new Text("pos");
+			t.setBounds(5, 75, 75, 20);
+			add(t);
+			m_position = new Text("?");
+			m_position.setBounds(80, 75, 100, 20);
+			add(m_position);
+
+			t = new Text("look");
+			t.setBounds(5, 90, 75, 20);
+			add(t);
+			m_orientation = new Text("?");
+			m_orientation.setBounds(80, 90, 100, 20);
+			add(m_orientation);
+
+			t = new Text("impulse");
+			t.setBounds(5, 105, 75, 20);
+			add(t);
+			m_impulse = new Text("?");
+			m_impulse.setBounds(80, 105, 100, 20);
+			add(m_impulse);
 		}
 	
 		public void setFps(float _fFps) {
-			NumberFormat nf = NumberFormat.getNumberInstance();
-			nf.setMinimumFractionDigits(1);
-			nf.setMaximumFractionDigits(1);
 			Float f = new Float(_fFps);
-			m_fps.setText(nf.format(f));
+			m_fps.setText(m_nf.format(f));
 		}
 	
 		public void setObjectCount(String _sCount) {
@@ -573,19 +591,34 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 		public void setMortalCount(String _sCount) {
 			m_mortalCount.setText(_sCount);
 		}
+	
+		public void setPosition(Point3f _position) {
+			String sPos = m_nf.format(_position.x) + "," + m_nf.format(_position.y) + "," + m_nf.format(_position.z);
+			m_position.setText(sPos);
+		}
+	
+		public void setOrientation(Vector3f _orientation) {
+			String sLook = m_nf.format(_orientation.x) + "," + m_nf.format(_orientation.y) + "," + m_nf.format(_orientation.z);
+			m_orientation.setText(sLook);
+		}
+	
+		public void setImpulse(Vector3f _impulse) {
+			String sImpulse = m_nf.format(_impulse.x) + "," + m_nf.format(_impulse.y) + "," + m_nf.format(_impulse.z);
+			m_impulse.setText(sImpulse);
+		}
 	}
 }
 
 class GearRenderer implements GLEventListener {
 	private ClientView3d m_view;
 	private Universe m_universe;
-	private Shape m_avatar;
+	private Entity m_avatar;
 	private UniverseRenderer m_universeRenderer;
 
 	private RenderContext m_context;
 	private FrameRateCounter m_frameRateCounter;
 	
-	public GearRenderer(ClientView3d _view, Universe _universe, Shape _avatar) {
+	public GearRenderer(ClientView3d _view, Universe _universe, Entity _avatar) {
 		m_view = _view;
 		m_universe = _universe;
 		m_avatar = _avatar;
@@ -664,6 +697,8 @@ class GearRenderer implements GLEventListener {
 		glu.gluPerspective(45.0f, h, 1.0, 600.0);
 //		gl.glFrustum(-1.0f, 1.0f, -h, h, 5.0f, 600.0f);
 		gl.glMatrixMode(GL.GL_MODELVIEW);
+
+		m_view.getGUI().updateRendering(m_context);
 	}
 
 	public void display(GLDrawable drawable) {
@@ -684,7 +719,7 @@ class GearRenderer implements GLEventListener {
 		gl.glPopMatrix();
 
 		renderFrameRate(m_context, m_frameRateCounter.getFrameRate());
-		m_view.updateInfo(m_frameRateCounter.getFrameRate());
+		m_view.updateInfo(m_frameRateCounter.getFrameRate(), m_avatar);
 		
 		m_view.getGUI().render(m_context);
 	}
@@ -727,6 +762,11 @@ class GearRenderer implements GLEventListener {
 
 /*
  * $Log$
+ * Revision 1.6  2003/12/01 22:52:10  tako
+ * Now supports mouse-handling in the GUI.
+ * GUI getes updated correctly when resizing the window.
+ * Added some info about the avatar to the info window.
+ *
  * Revision 1.5  2003/11/18 11:06:28  tako
  * All times and ages are now floats, no longs anymore.
  * Removed some unused code.
