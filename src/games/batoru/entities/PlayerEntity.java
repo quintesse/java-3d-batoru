@@ -37,7 +37,7 @@ public class PlayerEntity extends Entity implements Player, LiveEntity, NetworkE
 		super.updateState();
 	}
 
-	public void heartbeat(long _time) {
+	public void heartbeat(float _fTime) {
 		// Unused on the client side
 	}
 	

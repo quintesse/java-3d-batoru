@@ -155,16 +155,16 @@ public class Server {
 	
 	public void runUniverse() {
 		int nFrameNr = 0;
-		long lLastSystemTime = 0;
-		long lCurrentSystemTime = m_universe.getAge();
+		float fLastAge = 0;
+		float fCurrentAge = m_universe.getAge();
 		
 		while (m_bRunning) {
-			if (lLastSystemTime > 0) {
-				float fElapsedTime = (float)(lCurrentSystemTime - lLastSystemTime) / 1000;
+			if (fLastAge > 0) {
+				float fElapsedTime = fCurrentAge - fLastAge;
 				m_universe.handleFrame(fElapsedTime);
 				nFrameNr++;
 			}
-			lLastSystemTime = lCurrentSystemTime;
+			fLastAge = fCurrentAge;
 			
 			try {
 				Thread.sleep(100);

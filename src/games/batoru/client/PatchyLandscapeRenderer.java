@@ -18,14 +18,14 @@ public class PatchyLandscapeRenderer implements Renderable {
 	private Universe m_universe;
 	private PatchyLandscape m_model;
 	
-	private long m_lTimeOfBirth;
+	private float m_fTimeOfBirth;
 	private int m_nTerrainList;
 	
 	public PatchyLandscapeRenderer(Universe _universe, PatchyLandscape _model) {
 		m_universe = _universe;
 		m_model = _model;
 		
-		m_lTimeOfBirth = m_universe.getAge();
+		m_fTimeOfBirth = m_universe.getAge();
 		m_nTerrainList = -1;
 	}
 	
@@ -44,10 +44,10 @@ public class PatchyLandscapeRenderer implements Renderable {
 	public void render(RenderContext _context) {
 		GL gl = _context.getGl();
 		
+		float fTimer = m_universe.getAge() - m_fTimeOfBirth;
+		
 		gl.glBindTexture(GL.GL_TEXTURE_2D, _context.getTextureHandle(0));
 
-		float fTimer = (m_universe.getAge() - m_lTimeOfBirth) / 1000.0f;
-		
 		if (fTimer < 4.0f) {
 			float fScale = (fTimer / 4.0f);
 			gl.glColor4f(1.0f, 1.0f, 1.0f, Math.max(fScale, 0.2f));

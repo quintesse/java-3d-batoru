@@ -14,9 +14,9 @@ import org.codejive.world3d.*;
  */
 public class TurretEntity extends Entity implements LiveEntity {
 	private int m_nState = STATE_IDLE;
-	private long m_nLastHeartbeat = 0;
-	private long m_nWaitHeartbeat = 0;
-	private long m_nLastFired = 0;
+	private float m_fLastHeartbeat = 0;
+	private float m_fWaitHeartbeat = 0;
+	private float m_fLastFired = 0;
 	
 	private Matrix3f m_barrelTrans = new Matrix3f();
 	
@@ -50,11 +50,11 @@ public class TurretEntity extends Entity implements LiveEntity {
 		return m_barrelTrans;
 	}
 	
-	public void heartbeat(long _time) {
+	public void heartbeat(float _fTime) {
 		Iterator i;
 		
-		if (m_nLastHeartbeat > 0) {
-			float fSecs = (float)(_time - m_nLastHeartbeat) / 1000; 
+		if (m_fLastHeartbeat > 0) {
+			float fSecs = _fTime - m_fLastHeartbeat; 
 			switch (m_nState) {
 				case STATE_IDLE:
 					m_tmpTrans.rotY(IDLE_ROTATION_SPEED * fSecs);
@@ -116,12 +116,12 @@ public class TurretEntity extends Entity implements LiveEntity {
 					} else {
 						m_nState = STATE_WAITING;
 						m_target = null;
-						m_nWaitHeartbeat = _time;
+						m_fWaitHeartbeat = _fTime;
 						Universe.log(this, "State changed to WAITING");
 					}
 					break;
 				case STATE_WAITING:
-					if ((_time - m_nWaitHeartbeat) <= WAIT_TIME) {
+					if ((_fTime - m_fWaitHeartbeat) <= WAIT_TIME) {
 						i = m_universe.getLiveEntitiesWithinRadius(getPosition(), TARGET_RADIUS, PlayerClass.class, true);
 						if (i.hasNext()) {
 							m_nState = STATE_TRACKING;
@@ -135,7 +135,7 @@ public class TurretEntity extends Entity implements LiveEntity {
 					break;
 			}
 		}
-		m_nLastHeartbeat = _time;
+		m_fLastHeartbeat = _fTime;
 	}
 
 	/* (non-Javadoc)
