@@ -36,7 +36,9 @@ public class ServerMessageHelper {
 			_packet.writeString(_server.getName());
 			Universe.log(ServerMessageHelper.class, "broadcasting server announcement");
 			_server.sendBroadcastPacket(_packet);
-		} catch (UnknownHostException e) { /* ignore */ }
+		} catch (UnknownHostException e) {
+			System.err.println(e);
+		}
 	}
 	
 	public static void sendConnectAccept(MessagePacket _packet, MessagePort _server, MessagePort _client) {
