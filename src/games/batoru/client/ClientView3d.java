@@ -20,6 +20,7 @@ import javax.swing.JFrame;
 import javax.vecmath.*;
 
 import net.java.games.jogl.*;
+import net.java.games.jogl.util.GLUT;
 
 import org.codejive.world3d.*;
 import org.codejive.gui4gl.widgets.*;
@@ -33,6 +34,7 @@ import games.batoru.shapes.PlayerShape;
 
 /**
  * @author Tako
+ * @version $Revision: 50 $
  */
 public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionListener, KeyListener {
 	private String m_sTitle;
@@ -127,7 +129,7 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 		canvas.addKeyListener(m_screen);
 //		m_screen.addMouseListener(this);
 //		m_screen.addMouseMotionListener(this);
-		m_screen.setKeyListener(this);
+		m_screen.addKeyListener(this);
 
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		m_clientFrame.setSize(m_nWidth, m_nHeight);
@@ -463,12 +465,7 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 	}
 	
 	public void updateInfo(float _fFps) {
-		NumberFormat nf = NumberFormat.getNumberInstance();
-		nf.setMinimumFractionDigits(1);
-		nf.setMaximumFractionDigits(1);
-		Float f = new Float(_fFps);
-
-		m_infoWindow.setFps(nf.format(f));
+		m_infoWindow.setFps(_fFps);
 		m_infoWindow.setObjectCount(String.valueOf(m_client.getUniverse().getRenderablesList().size()));
 		m_infoWindow.setLiveCount(String.valueOf(m_client.getUniverse().getLiveEntitiesList().size()));
 		m_infoWindow.setMortalCount(String.valueOf(m_client.getUniverse().getTerminalEntitiesList().size()));
@@ -581,8 +578,12 @@ public class ClientView3d implements NetworkDecoder, MouseListener, MouseMotionL
 			add(m_mortalCount);
 		}
 	
-		public void setFps(String _sFps) {
-			m_fps.setText(_sFps);
+		public void setFps(float _fFps) {
+			NumberFormat nf = NumberFormat.getNumberInstance();
+			nf.setMinimumFractionDigits(1);
+			nf.setMaximumFractionDigits(1);
+			Float f = new Float(_fFps);
+			m_fps.setText(nf.format(f));
 		}
 	
 		public void setObjectCount(String _sCount) {
@@ -706,6 +707,7 @@ class GearRenderer implements GLEventListener {
 			
 		gl.glPopMatrix();
 
+		renderFrameRate(m_context, m_frameRateCounter.getFrameRate());
 		m_view.updateInfo(m_frameRateCounter.getFrameRate());
 		
 		m_view.getGUI().render(m_context);
@@ -715,7 +717,7 @@ class GearRenderer implements GLEventListener {
 		// Not needed
 	}
 
-/*		
+
 	private void renderFrameRate(RenderContext _context, float _fFps) {
 		GL gl = _context.getGl();
 
@@ -744,5 +746,17 @@ class GearRenderer implements GLEventListener {
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		gl.glPopMatrix (); 		
 	}
-*/
+
 }
+
+/*
+ * $Log$
+ * Revision 1.4  2003/11/17 13:18:50  tako
+ * Changed the setFps() method of the InfoWindow to accept floats
+ * instead of Strings.
+ * Changed call to setKeyListener() to addKeyListener() because of API
+ * change in the gui4gl package.
+ * Re-enabled the old FPS display code to compare measure the impact of
+ * the gui4gl windows in the frame rate.
+ *
+ */
