@@ -34,6 +34,10 @@ public class PatchyLandscapeRenderer implements Renderable {
 	}
 	
 	public void initRendering(RenderContext _context) {
+		updateRendering(_context);
+	}
+	
+	public void updateRendering(RenderContext _context) {
 		GL gl = _context.getGl();
 		m_nTerrainList = gl.glGenLists(1);
 		gl.glNewList(m_nTerrainList, GL.GL_COMPILE);
@@ -44,37 +48,11 @@ public class PatchyLandscapeRenderer implements Renderable {
 	public void render(RenderContext _context) {
 		GL gl = _context.getGl();
 		
-		float fTimer = m_universe.getAge() - m_fTimeOfBirth;
-		
 		gl.glBindTexture(GL.GL_TEXTURE_2D, _context.getTextureHandle(0));
-
-		if (fTimer < 4.0f) {
-			float fScale = (fTimer / 4.0f);
-			gl.glColor4f(1.0f, 1.0f, 1.0f, Math.max(fScale, 0.2f));
-//			gl.glEnable(GL.GL_BLEND);
-//			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);	// Translucency
-			gl.glScalef(1.0f, fScale, 1.0f);
-			gl.glColor3f(1, 1, 1);
-			gl.glBegin(GL.GL_TRIANGLE_STRIP);
-			gl.glCallList(m_nTerrainList);
-			gl.glEnd();
-//			gl.glDisable(GL.GL_BLEND);
-		} else {
-			gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-			gl.glBegin(GL.GL_TRIANGLE_STRIP);
-			gl.glCallList(m_nTerrainList);
-			gl.glEnd();
-		}
-
-/*		if (fTimer < 4.0f) {
-			gl.glDisable(GL.GL_DEPTH_TEST);
-			gl.glScalef(1.0f, 1.0f, 1.0f);
-			gl.glBegin(GL.GL_LINES);
-			gl.glCallList(m_nTerrainList);
-			gl.glEnd();
-			gl.glEnable(GL.GL_DEPTH_TEST);
-		}
-*/
+		gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		gl.glBegin(GL.GL_TRIANGLE_STRIP);
+		gl.glCallList(m_nTerrainList);
+		gl.glEnd();
 	}
 	
 	private void renderGeo(GL _gl) {
