@@ -4,7 +4,6 @@
 package games.batoru.net;
 
 import games.batoru.EntityBuilder;
-import games.batoru.entities.PlayerClass;
 import games.batoru.entities.PlayerEntity;
 import games.batoru.server.Server;
 
@@ -84,8 +83,7 @@ public class ClientHandler extends ConnectedMessagePort {
 	
 		SurfaceInformation si = u.newSurfaceInformation();
 		u.getSurfaceAt(0.0f, 0.0f, si);
-		PlayerClass pc = new PlayerClass();
-		m_avatar = (PlayerEntity)pc.createPlayer(u, new Point3f(0.0f, si.getHeight(), 40.0f), new Vector3f(0, 0, 1), 2.0f);
+		m_avatar = (PlayerEntity)EntityBuilder.createPlayer(u, new Point3f(0.0f, si.getHeight(), 40.0f), new Vector3f(0, 0, 1), 2.0f);
 		//avatar.setAffectedByGravity(false);
 	
 		// Spawn the remote avatar
