@@ -44,7 +44,7 @@ public class PatchyLandscapeRenderer implements Renderable {
 	public void render(RenderContext _context) {
 		GL gl = _context.getGl();
 		
-		gl.glBindTexture(gl.GL_TEXTURE_2D, _context.getTextureHandle(0));
+		gl.glBindTexture(GL.GL_TEXTURE_2D, _context.getTextureHandle(0));
 
 		float fTimer = (m_universe.getAge() - m_lTimeOfBirth) / 1000.0f;
 		
