@@ -256,11 +256,10 @@ public class PatchyLandscape implements NetworkEncoder, NetworkDecoder, Landscap
 	
 			Intersections is = new Intersections();
 			Point3d p = new Point3d(_x, 1000.0, _y);
-			Point3d isPoint = new Point3d();
-			Vector3d isNormal = new Vector3d();
-			if (is.intersectTriangleArray(p, m_downVector, 2000.0f, vb.getCoordinates(), 2, isPoint, isNormal, false)) {
-				_info.setHeight((float)isPoint.y);
-				_info.getNormal().set(isNormal);
+			Intersections.Intersection intersection = is.intersectTriangleArray(p, m_downVector, 2000.0f, vb.getCoordinates(), 2, false);
+			if (intersection.isIntersecting) {
+				_info.setHeight((float)intersection.point.y);
+				_info.getNormal().set(intersection.normal);
 			} else {
 				// No intersection???
 				_info.setHeight(0.0f);
