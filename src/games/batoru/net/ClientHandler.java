@@ -70,7 +70,7 @@ public class ClientHandler extends ConnectedMessagePort {
 
 		// Wait for READY message
 		Universe.log(this, "waiting for remote client READY");
-		MessagePacket packet = receivePacket();
+		receivePacket();
 		
 		// Ask the client to open a TCP connection to us
 		MessageStream out = requestConnection();
