@@ -98,6 +98,9 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 						// Now wait for the reply
 						MessagePacket msg = m_client.receivePacket();
 						int cookie = msg.readInt();
+						if (cookie != ServerMessageHelper.MAGIC_COOKIE) {
+							// TODO Handle the possibility that the protocol is incorrect 
+						}
 						byte packetType = msg.readByte();
 						switch (packetType) {
 							case ServerMessageHelper.MSG_CONNECT_ACCEPT:
