@@ -14,6 +14,7 @@ import net.java.games.jogl.GL;
 
 import org.codejive.utils4gl.RenderContext;
 import org.codejive.utils4gl.Renderable;
+import org.codejive.utils4gl.Vectors;
 import org.codejive.world3d.Shape;
 import org.codejive.world3d.Universe;
 
@@ -70,15 +71,19 @@ public class UniverseRenderer implements Renderable {
 		gl.glPushMatrix();
 		Iterator i = m_universe.getRenderables();
 		while (i.hasNext()) {
-			Shape s = (Shape)i.next();
-			if (s != m_avatar) {
-				if (!s.readyForRendering()) {
-					s.initRendering(_context);
+			Renderable r = (Renderable)i.next();
+			if (r != m_avatar) {
+				if (!r.readyForRendering()) {
+					r.initRendering(_context);
 				}
 				gl.glPushMatrix();
-				pos = s.getPosition();
+				if (r instanceof Shape) {
+					pos = ((Shape)r).getPosition();
+				} else {
+					pos = Vectors.POSF_CENTER;
+				}
 				gl.glTranslatef(pos.x, pos.y, pos.z);
-				s.render(_context);
+				r.render(_context);
 				gl.glPopMatrix();
 			}
 		}
