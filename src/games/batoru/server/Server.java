@@ -38,10 +38,10 @@ public class Server {
 		NetworkClassCache cache = NetworkClassCache.getServerCache();
 		cache.registerClass("games.batoru.BatoruUniverse", "games.batoru.BatoruUniverse");
 		cache.registerClass("games.batoru.PatchyLandscape", "games.batoru.PatchyLandscape");
-		cache.registerClass("games.batoru.entities.PlayerClass", "games.batoru.shapes.PlayerShape");
-		cache.registerClass("games.batoru.entities.BulletClass", "games.batoru.shapes.BulletShape");
-		cache.registerClass("games.batoru.entities.TreeClass", "games.batoru.shapes.TreeShape");
-		cache.registerClass("games.batoru.entities.TurretClass", "games.batoru.shapes.TurretShape");
+		cache.registerClass("games.batoru.entities.PlayerEntity", "games.batoru.entities.PlayerEntity");
+		cache.registerClass("games.batoru.entities.BulletEntity", "games.batoru.entities.BulletEntity");
+		cache.registerClass("games.batoru.entities.TreeEntity", "games.batoru.entities.TreeEntity");
+		cache.registerClass("games.batoru.entities.TurretEntity", "games.batoru.entities.TurretEntity");
 
 		m_universe = new BatoruUniverse();
 		
@@ -175,9 +175,6 @@ public class Server {
 	}
 	
 	private void decorateLandscape(Universe _universe, PatchyLandscape _landscape) {
-		TreeClass treeClass = new TreeClass();
-		TurretClass turretClass = new TurretClass();
-			
 		float[][] vfHeights = _landscape.getHeights();
 		PatchyLandscape.LandscapePatch[][] vPatches = _landscape.getPatches();
 		int nObjectCount = (_landscape.getWidth() * _landscape.getHeight() / 100);
@@ -210,13 +207,13 @@ public class Server {
 				// If so, put an object on it
 				Entity obj = null;
 				if (i == 0) {
-					obj = turretClass.createTurret(_universe, worldPos);
+					obj = EntityBuilder.createTurret(_universe, worldPos);
 //					obj = treeClass.createEntity(_universe, worldPos);
 				} else {
 					if ((i % 10) == 0) {
-						obj = turretClass.createTurret(_universe, worldPos);
+						obj = EntityBuilder.createTurret(_universe, worldPos);
 					} else {
-						obj = treeClass.createEntity(_universe, worldPos);
+						obj = EntityBuilder.createTree(_universe, worldPos);
 					}
 				}
 				vPatches[x][y].setObject(obj);

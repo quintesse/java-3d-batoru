@@ -6,7 +6,7 @@ package games.batoru.client;
 import java.io.IOException;
 import java.net.Socket;
 
-import org.codejive.world3d.Shape;
+import org.codejive.world3d.Entity;
 import org.codejive.world3d.Universe;
 import org.codejive.world3d.net.ConnectedMessagePort;
 import org.codejive.world3d.net.MessagePacket;
@@ -33,7 +33,7 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 	private Socket m_tcpSocket;
 	private int m_nState;
 	private Universe m_universe;
-	private Shape m_avatar;
+	private Entity m_avatar;
 	private ClientView3d m_view;
 
 	public static final int STATE_DISCONNECTED = 0;
@@ -50,7 +50,7 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 		return m_universe;
 	}
 	
-	public Shape getAvatar() {
+	public Entity getAvatar() {
 		return m_avatar;
 	}
 	
@@ -253,7 +253,7 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 				short nUniverseId = _reader.readShort();
 				short nAvatarId = _reader.readShort();
 				Universe universe = (Universe)cache.getInstance(nUniverseId);
-				Shape avatar = (Shape)cache.getInstance(nAvatarId);
+				Entity avatar = (Entity)cache.getInstance(nAvatarId);
 				startRendering(universe, avatar);
 				break;
 			default:
@@ -264,7 +264,7 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 		return bOk;
 	}
 
-	public void startRendering(Universe _universe, Shape _avatar) {
+	public void startRendering(Universe _universe, Entity _avatar) {
 		m_universe = _universe;
 		m_avatar = _avatar;
 		m_view = new ClientView3d(this, "Batoru Client", false);
