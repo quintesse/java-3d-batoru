@@ -228,6 +228,7 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 					Class cls = cache.getClientClass(i);
 					if (cls == null) {
 						// Missing class, disconnect from the server
+						System.err.println("Could not load class: " + cache.getClientClassName(i));
 						stop();
 					}
 				}
