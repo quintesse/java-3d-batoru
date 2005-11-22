@@ -45,7 +45,7 @@ public class Server {
 
 		m_universe = new BatoruUniverse();
 		
-		PatchyLandscape lmodel = new PatchyLandscape(101, 101, 5.0f, 5.0f);
+		PatchyLandscape lmodel = new PatchyLandscape(128, 128, 5.0f, 5.0f);
 		m_universe.setLandscape(lmodel);
 		decorateLandscape(m_universe, lmodel);
 	}
