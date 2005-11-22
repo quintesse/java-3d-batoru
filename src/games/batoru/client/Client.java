@@ -104,7 +104,10 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 						byte packetType = msg.readByte();
 						switch (packetType) {
 							case ServerMessageHelper.MSG_CONNECT_ACCEPT:
-								short nServerPort = msg.readShort();
+								int nServerPort = msg.readShort();
+								if (nServerPort < 0) {
+									nServerPort = 65536 + nServerPort;
+								}
 								Universe.log(this, "Server accepted connect request, remote port: " + nServerPort);
 								int port = m_client.getPort();
 								m_client.stop();
@@ -267,7 +270,7 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 	public void startRendering(Universe _universe, Entity _avatar) {
 		m_universe = _universe;
 		m_avatar = _avatar;
-		m_view = new ClientView3d(this, "Batoru Client", false);
+		m_view = new ClientView3d("Batoru Client", false);
 		m_view.start();
 	}
 }
