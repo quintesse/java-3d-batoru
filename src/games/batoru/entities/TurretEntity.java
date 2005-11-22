@@ -9,13 +9,14 @@ import java.util.Iterator;
 
 import javax.vecmath.*;
 
-import net.java.games.jogl.GL;
-import net.java.games.jogl.GLU;
-import net.java.games.jogl.GLUquadric;
-import net.java.games.jogl.util.GLUT;
+import javax.media.opengl.GL;
+import javax.media.opengl.glu.GLU;
+import javax.media.opengl.glu.GLUquadric;
+import com.sun.opengl.utils.GLUT;
 
 import org.codejive.utils4gl.GLColor;
 import org.codejive.utils4gl.RenderContext;
+import org.codejive.utils4gl.RenderObserver;
 import org.codejive.utils4gl.Vectors;
 import org.codejive.world3d.*;
 
@@ -84,7 +85,7 @@ public class TurretEntity extends Entity implements LiveEntity {
 					m_tmpTrans.rotY(IDLE_ROTATION_SPEED * fSecs);
 					m_tmpTrans.transform(m_barrelDir);
 					
-					i = m_universe.getLiveEntitiesWithinRadius(getPosition(), TARGET_RADIUS, PlayerEntity.class, true);
+					i = getUniverse().getLiveEntitiesWithinRadius(getPosition(), TARGET_RADIUS, PlayerEntity.class, true);
 					if (i.hasNext()) {
 						m_nState = STATE_TRACKING;
 						m_target = (Entity)i.next();
@@ -102,7 +103,7 @@ public class TurretEntity extends Entity implements LiveEntity {
 							Universe.log(this, "Shot fired @" + m_target.toString());
 							Point3f p = (Point3f)getPosition().clone();
 							p.y += 1.6f;
-							Entity bullet = EntityBuilder.createBullet(m_universe, p, m_tmpVect, 20.0f, 5.0f);
+							Entity bullet = EntityBuilder.createBullet(getUniverse(), p, m_tmpVect, 20.0f, 5.0f);
 							m_fLastFired = _fTime;
 						}
 /*
@@ -155,7 +156,7 @@ public class TurretEntity extends Entity implements LiveEntity {
 					break;
 				case STATE_WAITING:
 					if ((_fTime - m_fWaitHeartbeat) <= WAIT_TIME) {
-						i = m_universe.getLiveEntitiesWithinRadius(getPosition(), TARGET_RADIUS, PlayerEntity.class, true);
+						i = getUniverse().getLiveEntitiesWithinRadius(getPosition(), TARGET_RADIUS, PlayerEntity.class, true);
 						if (i.hasNext()) {
 							m_nState = STATE_TRACKING;
 							m_target = (Entity)i.next();
@@ -171,16 +172,16 @@ public class TurretEntity extends Entity implements LiveEntity {
 		m_fLastHeartbeat = _fTime;
 	}
 
-	public void render(RenderContext _context) {
+	public void render(RenderContext _context, RenderObserver _observer) {
 		GL gl = _context.getGl();
 		GLU glu = _context.getGlu();
 		GLUT glut = _context.getGlut();
 
 		gl.glPushMatrix();
-		gl.glColor3fv(m_baseColor.toArray3f());
+		gl.glColor3fv(m_baseColor.toArray3f(), 0);
 		gl.glTranslatef(m_basePos.x, m_basePos.y, m_basePos.z);
 		gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-		glut.glutSolidCone(glu, 0.5f, 1.6f, 12, 1);
+		glut.glutSolidCone(0.5f, 1.6f, 12, 1);
 		gl.glPopMatrix();
 		
 		gl.glPushMatrix();
@@ -188,14 +189,14 @@ public class TurretEntity extends Entity implements LiveEntity {
 		Vector3f orientation = getBarrelOrientation();
 		glu.gluLookAt(0, 0, 0, orientation.x, orientation.y, orientation.z, 0, 1, 0);
 		gl.glPushMatrix();
-		gl.glColor3fv(m_boxColor.toArray3f());
+		gl.glColor3fv(m_boxColor.toArray3f(), 0);
 		gl.glTranslatef(m_boxPos.x, m_boxPos.y, m_boxPos.z);
 		gl.glScalef(1.0f, 0.4f, 0.4f);
-		glut.glutSolidCube(gl, 1.0f);
+		glut.glutSolidCube(1.0f);
 		gl.glPopMatrix();
 		
 		gl.glPushMatrix();
-		gl.glColor3fv(m_barrelColor.toArray3f());
+		gl.glColor3fv(m_barrelColor.toArray3f(), 0);
 		gl.glTranslatef(m_barrelPos.x, m_barrelPos.y, m_barrelPos.z);
 		gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
 		GLUquadric quad = glu.gluNewQuadric();

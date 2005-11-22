@@ -5,9 +5,10 @@ package games.batoru.entities;
 
 import javax.vecmath.*;
 
-import net.java.games.jogl.GL;
+import javax.media.opengl.GL;
 
 import org.codejive.utils4gl.RenderContext;
+import org.codejive.utils4gl.RenderObserver;
 import org.codejive.utils4gl.Vectors;
 import org.codejive.world3d.*;
 import org.codejive.world3d.loaders.md3.MD3Loader;
@@ -104,7 +105,7 @@ public class PlayerEntity extends Entity implements LiveEntity, NetworkEncoder {
 		super.initRendering(_context);
 	}
 	
-	public void render(RenderContext _context) {
+	public void render(RenderContext _context, RenderObserver _observer) {
 		GL gl = _context.getGl();
 		gl.glTranslatef(0.0f, -1.4f, 0.0f);
 		gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);

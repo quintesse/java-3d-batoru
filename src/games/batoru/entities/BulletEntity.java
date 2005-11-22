@@ -8,18 +8,20 @@ import java.awt.Color;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 
-import net.java.games.jogl.GL;
-import net.java.games.jogl.GLU;
-import net.java.games.jogl.GLUquadric;
+import javax.media.opengl.GL;
+import javax.media.opengl.glu.GLU;
+import javax.media.opengl.glu.GLUquadric;
 
 import org.codejive.utils4gl.GLColor;
 import org.codejive.utils4gl.RenderContext;
+import org.codejive.utils4gl.RenderObserver;
+import org.codejive.world3d.Camera;
 import org.codejive.world3d.Entity;
 import org.codejive.world3d.Universe;
 
 /**
  * @author tako
- * @version $Revision: 173 $
+ * @version $Revision: 338 $
  */
 public class BulletEntity extends Entity {
 	private int m_nBulletShapeList;
@@ -59,7 +61,7 @@ public class BulletEntity extends Entity {
 		super.initRendering(_context);
 	}
 
-	public void render(RenderContext _context) {
+	public void render(RenderContext _context, RenderObserver _observer) {
 		GL gl = _context.getGl();
 		GLU glu = _context.getGlu();
 

@@ -5,24 +5,27 @@ package games.batoru.entities;
 
 import javax.vecmath.Point3f;
 
-import net.java.games.jogl.GL;
-import net.java.games.jogl.GLU;
-import net.java.games.jogl.GLUquadric;
-import net.java.games.jogl.util.GLUT;
+import javax.media.opengl.GL;
+import javax.media.opengl.glu.GLU;
+import javax.media.opengl.glu.GLUquadric;
+import com.sun.opengl.utils.GLUT;
 
 import org.codejive.utils4gl.GLColor;
 import org.codejive.utils4gl.RenderContext;
+import org.codejive.utils4gl.RenderObserver;
+import org.codejive.world3d.Camera;
 import org.codejive.world3d.Entity;
 import org.codejive.world3d.Universe;
 
 /**
  * @author tako
- * @version $Revision: 173 $
+ * @version $Revision: 338 $
  */
 public class TreeEntity extends Entity {
-	static final GLColor m_trunkColor = new GLColor(.5f, .25f, 0);
-	static final GLColor m_coneColor = new GLColor(0, .5f, .25f);
-	int m_nTreeShapeList;
+	private static int m_nTreeShapeList = -1;
+
+	private static final GLColor m_trunkColor = new GLColor(.5f, .25f, 0);
+	private static final GLColor m_coneColor = new GLColor(0, .5f, .25f);
 	
 	public TreeEntity() {
 		super();
@@ -33,34 +36,36 @@ public class TreeEntity extends Entity {
 	}
 	
 	public void initRendering(RenderContext _context) {
-		GL gl = _context.getGl();
-		GLU glu = _context.getGlu();
-		GLUT glut = _context.getGlut();
+		if (m_nTreeShapeList == -1) {
+			GL gl = _context.getGl();
+			GLU glu = _context.getGlu();
+			GLUT glut = _context.getGlut();
 
-		m_nTreeShapeList = gl.glGenLists(1);
-		gl.glNewList(m_nTreeShapeList, GL.GL_COMPILE);
-
-		gl.glPushMatrix();
-		gl.glColor3f(m_trunkColor.getRed(), m_trunkColor.getGreen(), m_trunkColor.getBlue());
-		gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-		GLUquadric quad = glu.gluNewQuadric();
-		glu.gluCylinder(quad, 0.2d, 0.2d, 1.6d, 6, 1);
-		glu.gluDeleteQuadric(quad);
-		gl.glPopMatrix();
+			m_nTreeShapeList = gl.glGenLists(1);
+			gl.glNewList(m_nTreeShapeList, GL.GL_COMPILE);
+	
+			gl.glPushMatrix();
+			gl.glColor3f(m_trunkColor.getRed(), m_trunkColor.getGreen(), m_trunkColor.getBlue());
+			gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+			GLUquadric quad = glu.gluNewQuadric();
+			glu.gluCylinder(quad, 0.2d, 0.2d, 1.6d, 6, 1);
+			glu.gluDeleteQuadric(quad);
+			gl.glPopMatrix();
+			
+			gl.glPushMatrix();
+			gl.glColor3f(m_coneColor.getRed(), m_coneColor.getGreen(), m_coneColor.getBlue());
+			gl.glTranslatef(0.0f, 1.6f, 0.0f);
+			gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+			glut.glutSolidCone(0.7f, 4.0f, 6, 1);
+			gl.glPopMatrix();
+	
+			gl.glEndList();		
+		}
 		
-		gl.glPushMatrix();
-		gl.glColor3f(m_coneColor.getRed(), m_coneColor.getGreen(), m_coneColor.getBlue());
-		gl.glTranslatef(0.0f, 1.6f, 0.0f);
-		gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-		glut.glutSolidCone(glu, 0.7f, 4.0f, 6, 1);
-		gl.glPopMatrix();
-
-		gl.glEndList();		
-
 		super.initRendering(_context);
 	}
 	
-	public void render(RenderContext _context) {
+	public void render(RenderContext _context, RenderObserver _observer) {
 		_context.getGl().glCallList(m_nTreeShapeList);
 /*
 		GL gl = _context.getGl();
