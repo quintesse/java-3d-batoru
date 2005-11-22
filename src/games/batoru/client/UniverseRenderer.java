@@ -11,10 +11,11 @@ import games.batoru.entities.PlayerEntity;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 
-import net.java.games.jogl.GL;
-import net.java.games.jogl.GLU;
+import javax.media.opengl.GL;
+import javax.media.opengl.glu.GLU;
 
 import org.codejive.utils4gl.RenderContext;
+import org.codejive.utils4gl.RenderObserver;
 import org.codejive.utils4gl.Renderable;
 import org.codejive.utils4gl.Vectors;
 import org.codejive.world3d.Entity;
@@ -49,12 +50,7 @@ public class UniverseRenderer implements Renderable {
 		m_bReadyForRendering = true;
 	}
 	
-	public void updateRendering(RenderContext _context) {
-		m_lrenderer.updateRendering(_context);
-		m_avatar.updateRendering(_context);
-	}
-	
-	public void render(RenderContext _context) {
+	public void render(RenderContext _context, RenderObserver _observer) {
 		GL gl = _context.getGl();
 		GLU glu = _context.getGlu();
 
@@ -64,7 +60,7 @@ public class UniverseRenderer implements Renderable {
 		if (false) {
 			gl.glTranslatef(0.0f, -0.0f, -5.0f);
 			gl.glPushMatrix();
-			m_avatar.render(_context);
+			m_avatar.render(_context, _observer);
 			gl.glPopMatrix();
 		}
 		glu.gluLookAt(0, 0, 0, orientation.x, orientation.y, orientation.z, 0, 1, 0);
@@ -82,13 +78,13 @@ public class UniverseRenderer implements Renderable {
 		}	// TODO Just here for testing purposes!!!!
 
 		// Render the landscape
-		m_lrenderer.render(_context);
+		m_lrenderer.render(_context, _observer);
 		
 		// Render the Entities
-		renderObjects(_context);
+		renderObjects(_context, _observer);
 	}		
 
-	void renderObjects(RenderContext _context) {
+	void renderObjects(RenderContext _context, RenderObserver _observer) {
 		GL gl = _context.getGl();
 
 		Iterator i = m_universe.getRenderables();
@@ -106,7 +102,7 @@ public class UniverseRenderer implements Renderable {
 					pos = Vectors.POSF_CENTER;
 				}
 				gl.glTranslatef(pos.x, pos.y, pos.z);
-				r.render(_context);
+				r.render(_context, _observer);
 				gl.glPopMatrix();
 			}
 		}
