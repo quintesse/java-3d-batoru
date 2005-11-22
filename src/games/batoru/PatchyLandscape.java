@@ -18,6 +18,7 @@ import org.codejive.world3d.SurfaceInformation;
 import org.codejive.world3d.Universe;
 import org.codejive.world3d.net.*;
 import org.codejive.utils4gl.*;
+import org.codejive.utils4gl.geometries.*;
 
 /**
  * @author Tako
@@ -243,23 +244,37 @@ public class PatchyLandscape implements NetworkEncoder, NetworkDecoder, Landscap
 		if (getPatchIndex(_x, _y, patchPos)) {
 			float vfHeights[][] = getHeights();
 			Point3f origin = getOrigin();
-	
-			VertexBuffer vb = new VertexBuffer(6);
+
+/*
+			VertexBuffer vb = new DefaultVertexBuffer(6, VertexBuffer.COORDINATES);
 	
 			vb.addVertex(origin.x + patchPos.x * getPatchWidth(), origin.y + vfHeights[patchPos.x][patchPos.y], origin.z + patchPos.y * getPatchHeight());
 			vb.addVertex(origin.x + patchPos.x * getPatchWidth(), origin.y + vfHeights[patchPos.x][patchPos.y + 1], origin.z + (patchPos.y + 1) * getPatchHeight());
+			vb.addVertex(origin.x + (patchPos.x + 1) * getPatchWidth(), origin.y + vfHeights[patchPos.x + 1][patchPos.y + 1], origin.z + (patchPos.y + 1) * getPatchHeight());
+			
+//			vb.addVertex(origin.x + patchPos.x * getPatchWidth(), origin.y + vfHeights[patchPos.x][patchPos.y], origin.z + patchPos.y * getPatchHeight());
 			vb.addVertex(origin.x + (patchPos.x + 1) * getPatchWidth(), origin.y + vfHeights[patchPos.x + 1][patchPos.y], origin.z + patchPos.y * getPatchHeight());
-	
+//			vb.addVertex(origin.x + (patchPos.x + 1) * getPatchWidth(), origin.y + vfHeights[patchPos.x + 1][patchPos.y + 1], origin.z + (patchPos.y + 1) * getPatchHeight());
+*/
+			VertexBuffer vb = new VertexBuffer(4, 4, VertexBuffer.COORDINATES | VertexBuffer.BUFFER_ARRAY);
+			
+			vb.addVertex(origin.x + patchPos.x * getPatchWidth(), origin.y + vfHeights[patchPos.x][patchPos.y], origin.z + patchPos.y * getPatchHeight());
+			vb.addVertex(origin.x + (patchPos.x + 1) * getPatchWidth(), origin.y + vfHeights[patchPos.x + 1][patchPos.y], origin.z + patchPos.y * getPatchHeight());
 			vb.addVertex(origin.x + patchPos.x * getPatchWidth(), origin.y + vfHeights[patchPos.x][patchPos.y + 1], origin.z + (patchPos.y + 1) * getPatchHeight());
 			vb.addVertex(origin.x + (patchPos.x + 1) * getPatchWidth(), origin.y + vfHeights[patchPos.x + 1][patchPos.y + 1], origin.z + (patchPos.y + 1) * getPatchHeight());
-			vb.addVertex(origin.x + (patchPos.x + 1) * getPatchWidth(), origin.y + vfHeights[patchPos.x + 1][patchPos.y], origin.z + patchPos.y * getPatchHeight());
-	
-			Intersections is = new Intersections();
+
+			vb.addIndex(0);
+			vb.addIndex(2);
+			vb.addIndex(1);
+			vb.addIndex(3);
+			
+			Geometry geom = new TriangleStripGeometry(vb);
+			
 			Point3d p = new Point3d(_x, 1000.0, _y);
-			Intersections.Intersection intersection = is.intersectTriangleArray(p, m_downVector, 2000.0f, vb.getCoordinates(), 2, false);
-			if (intersection.isIntersecting) {
-				_info.setHeight((float)intersection.point.y);
-				_info.getNormal().set(intersection.normal);
+			Intersection intersection = geom.intersectClosest(p, m_downVector);
+			if (intersection.isIntersecting()) {
+				_info.setHeight((float)intersection.getPoint().y);
+				_info.getNormal().set(intersection.getNormal());
 			} else {
 				// No intersection???
 				_info.setHeight(0.0f);
