@@ -3,8 +3,6 @@
  */
 package games.batoru;
 
-import games.batoru.client.PatchyLandscapeRenderer;
-
 import org.codejive.world3d.Universe;
 import org.codejive.world3d.net.MessageReader;
 import org.codejive.world3d.net.MessageWriter;
