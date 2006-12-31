@@ -8,18 +8,17 @@ import javax.vecmath.Point3f;
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 import javax.media.opengl.glu.GLUquadric;
-import com.sun.opengl.utils.GLUT;
+import com.sun.opengl.util.GLUT;
 
 import org.codejive.utils4gl.GLColor;
 import org.codejive.utils4gl.RenderContext;
 import org.codejive.utils4gl.RenderObserver;
-import org.codejive.world3d.Camera;
 import org.codejive.world3d.Entity;
 import org.codejive.world3d.Universe;
 
 /**
  * @author tako
- * @version $Revision: 338 $
+ * @version $Revision: 352 $
  */
 public class TreeEntity extends Entity {
 	private static int m_nTreeShapeList = -1;

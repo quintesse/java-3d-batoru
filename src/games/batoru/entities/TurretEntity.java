@@ -12,7 +12,7 @@ import javax.vecmath.*;
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 import javax.media.opengl.glu.GLUquadric;
-import com.sun.opengl.utils.GLUT;
+import com.sun.opengl.util.GLUT;
 
 import org.codejive.utils4gl.GLColor;
 import org.codejive.utils4gl.RenderContext;
