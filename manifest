@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Main-Class: games.batoru.Batoru
+Class-Path: ext\vecmath.jar ext\jogl.jar
+Bundle-NativeCode: jogl.dll; osname=Windows; processor=x86
+Bundle-NativeCode: jogl_cg.dll; osname=Windows; processor=x86

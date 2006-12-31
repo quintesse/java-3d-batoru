@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jardesc>
+    <jar path="C:/Work/JAVA/JoglTest/batoru.jar"/>
+    <options overwrite="false" compress="true" exportErrors="true"
+        exportWarnings="true" saveDescription="true"
+        descriptionLocation="/Batoru/batoru.jardesc"
+        useSourceFolders="false" buildIfNeeded="true"/>
+    <manifest manifestVersion="1.0" usesManifest="true"
+        reuseManifest="true" saveManifest="true"
+        generateManifest="false" manifestLocation="/Batoru/manifest" mainClassHandleIdentifier="=Batoru/&lt;games.batoru{Batoru.java[Batoru">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="false">
+        <javaElement handleIdentifier="=Batoru/&lt;games.batoru"/>
+        <javaElement handleIdentifier="=Batoru/&lt;games.batoru.net"/>
+        <file path="/Batoru/jogl_cg.dll"/>
+        <javaElement handleIdentifier="=Batoru/&lt;games.batoru.shapes"/>
+        <javaElement handleIdentifier="=Batoru/&lt;ext"/>
+        <javaElement handleIdentifier="=Batoru/&lt;games.batoru.server"/>
+        <javaElement handleIdentifier="=Batoru/&lt;org.codejive.world3d"/>
+        <javaElement handleIdentifier="=Batoru/&lt;org.codejive.world3d.net"/>
+        <javaElement handleIdentifier="=Batoru/&lt;games.batoru.textures"/>
+        <javaElement handleIdentifier="=Batoru/&lt;games.batoru.entities"/>
+        <javaElement handleIdentifier="=Batoru/&lt;org.codejive.world3d.physics"/>
+        <javaElement handleIdentifier="=Batoru/&lt;org.codejive.world3d.utils"/>
+        <javaElement handleIdentifier="=Batoru/&lt;games.batoru.client"/>
+        <javaElement handleIdentifier="=Batoru/&lt;org.codejive.world3d.particles"/>
+        <file path="/Batoru/jogl.dll"/>
+    </selectedElements>
+</jardesc>
