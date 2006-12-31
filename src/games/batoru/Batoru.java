@@ -14,6 +14,7 @@ import javax.swing.*;
 
 import games.batoru.server.Server;
 import games.batoru.client.Client;
+import games.batoru.client.ClientView3d;
 
 /**
  * @author Tako
@@ -77,7 +78,7 @@ public class Batoru {
 	}
 	
 	protected static void startClient() {
-		Client client = new Client();
+		ClientView3d client = new ClientView3d("Batoru Client", false);
 		client.start();
 		m_clients.add(client);
 	}
@@ -85,7 +86,7 @@ public class Batoru {
 	protected static void exitApplication() {
 		Iterator i = m_clients.iterator();
 		while (i.hasNext()) {
-			Client client = (Client)i.next();
+			ClientView3d client = (ClientView3d)i.next();
 			client.stop();
 		}
 		if (m_server != null) {
