@@ -5,6 +5,7 @@ package games.batoru.server;
 
 import java.awt.Point;
 import java.util.*;
+import java.util.logging.Logger;
 
 import javax.vecmath.*;
 
@@ -14,7 +15,6 @@ import org.codejive.world3d.net.MessagePort;
 import org.codejive.world3d.net.NetworkClassCache;
 
 import games.batoru.*;
-import games.batoru.entities.*;
 import games.batoru.net.*;
 
 /**
@@ -26,14 +26,16 @@ public class Server {
 	
 	private MessagePort m_connectorPort;
 	private MessagePacket m_message;
-	private Map m_clients;
+	private Map<Integer, ClientHandler> m_clients;
 	
 	private Universe m_universe;
 	
 	private static final int MAX_CLIENTS = 8;
 	
+	private static Logger logger = Logger.getLogger(Server.class.getName());
+	
 	public Server() {
-		m_clients = new HashMap();
+		m_clients = new HashMap<Integer, ClientHandler>();
 		
 		NetworkClassCache cache = NetworkClassCache.getServerCache();
 		cache.registerClass("games.batoru.BatoruUniverse", "games.batoru.BatoruUniverse");
@@ -112,7 +114,7 @@ public class Server {
 				MessagePacket packet = m_connectorPort.receivePacket();
 				byte packetType = packet.readByte();
 				if (packetType == ClientMessageHelper.MSG_CONNECT_REQUEST) {
-					Universe.log(this, "Client connect request received");
+					logger.info("Client connect request received");
 					ClientHandler client = new ClientHandler(this, packet.getAddress(), packet.getPort());
 					if (addClient(client)) {
 						ServerMessageHelper.sendConnectAccept(packet, m_connectorPort, client);
@@ -121,16 +123,15 @@ public class Server {
 						ServerMessageHelper.sendConnectDeny(packet, m_connectorPort, client, "Server full");
 					}
 				} else {
-					Universe.log(this, "unknown message type received from unconnected client");
+					logger.info("unknown message type received from unconnected client");
 				}
 				m_connectorPort.releasePacket(packet);
 			}
 		} catch (InterruptedException e) { /* ignore */ }
 		
 		// Tell all connected clients to disconnect
-		Iterator i = m_clients.values().iterator();
-		while (i.hasNext()) {
-			ServerMessageHelper.sendDisconnect(m_message, (ClientHandler)i.next(), "Server shutdown");
+		for (ClientHandler handler : m_clients.values()) {
+			ServerMessageHelper.sendDisconnect(m_message, handler, "Server shutdown");
 		}
 
 		m_connectorPort.stop();

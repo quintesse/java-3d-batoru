@@ -69,9 +69,9 @@ public class UniverseRenderer implements Renderable {
 		{	// TODO Just here for testing purposes!!!!
 			// The code here gives client-side objects a heartbeat
 			// Normally this should only happen on the server!!
-			Iterator i = m_universe.getLiveEntities();
+			Iterator<LiveEntity> i = m_universe.getLiveEntities();
 			while (i.hasNext()) {
-				LiveEntity e = (LiveEntity)i.next();
+				LiveEntity e = i.next();
 				e.heartbeat(m_universe.getAge());
 				
 			}
@@ -87,9 +87,9 @@ public class UniverseRenderer implements Renderable {
 	void renderObjects(RenderContext _context, RenderObserver _observer) {
 		GL gl = _context.getGl();
 
-		Iterator i = m_universe.getRenderables();
+		Iterator<Renderable> i = m_universe.getRenderables();
 		while (i.hasNext()) {
-			Renderable r = (Renderable)i.next();
+			Renderable r = i.next();
 			if (r != m_avatar) {
 				if (!r.readyForRendering()) {
 					r.initRendering(_context);

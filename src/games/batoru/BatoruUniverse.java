@@ -17,6 +17,7 @@ public class BatoruUniverse extends Universe {
 	/* (non-Javadoc)
 	 * @see org.codejive.world3d.net.NetworkEncoder#writeInit(org.codejive.world3d.net.MessageWriter)
 	 */
+	@Override
 	public void writeInit(MessageWriter _writer) {
 		super.writeInit(_writer);
 		getLandscape().writeInit(_writer);
@@ -25,6 +26,7 @@ public class BatoruUniverse extends Universe {
 	/* (non-Javadoc)
 	 * @see org.codejive.world3d.net.NetworkEncoder#writeKill(org.codejive.world3d.net.MessageWriter)
 	 */
+	@Override
 	public void writeKill(MessageWriter _writer) {
 		// TODO Handle Universe kill message writing
 	}
@@ -32,6 +34,7 @@ public class BatoruUniverse extends Universe {
 	/* (non-Javadoc)
 	 * @see org.codejive.world3d.net.NetworkEncoder#writeUpdate(org.codejive.world3d.net.MessageWriter)
 	 */
+	@Override
 	public void writeUpdate(MessageWriter _writer) {
 		// TODO Handle Universe update message writing
 	}
@@ -41,6 +44,7 @@ public class BatoruUniverse extends Universe {
 	/* (non-Javadoc)
 	 * @see org.codejive.world3d.net.NetworkDecoder#netInit(org.codejive.world3d.net.MessageReader)
 	 */
+	@Override
 	public void netInit(MessageReader _reader) {
 		super.netInit(_reader);
 		PatchyLandscape landscape = new PatchyLandscape();
@@ -51,6 +55,7 @@ public class BatoruUniverse extends Universe {
 	/* (non-Javadoc)
 	 * @see org.codejive.world3d.net.NetworkDecoder#netKill(org.codejive.world3d.net.MessageReader)
 	 */
+	@Override
 	public void netKill(MessageReader _reader) {
 		// TODO Handle Universe kill message writing
 	}
@@ -58,6 +63,7 @@ public class BatoruUniverse extends Universe {
 	/* (non-Javadoc)
 	 * @see org.codejive.world3d.net.NetworkDecoder#netUpdate(org.codejive.world3d.net.MessageReader)
 	 */
+	@Override
 	public void netUpdate(MessageReader _reader) {
 		// TODO Handle Universe update message writing
 	}

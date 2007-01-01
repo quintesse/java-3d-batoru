@@ -50,6 +50,7 @@ public class PlayerEntity extends Entity implements LiveEntity, NetworkEncoder {
 		return m_fEyeHeight;
 	}
 	
+	@Override
 	public void updateState() {
 		super.updateState();
 	}
@@ -94,6 +95,7 @@ public class PlayerEntity extends Entity implements LiveEntity, NetworkEncoder {
 		return true;
 	}
 
+	@Override
 	public void initRendering(RenderContext _context) {
 		m_lara = new MD3Loader(_context.getGl(), _context.getGlu());
 		m_lara.LoadModel("models/lara", "lara");
@@ -119,6 +121,7 @@ public class PlayerEntity extends Entity implements LiveEntity, NetworkEncoder {
 	/* (non-Javadoc)
 	 * @see org.codejive.world3d.net.NetworkDecoder#netInit(org.codejive.world3d.net.ConnectedMessagePort)
 	 */
+	@Override
 	public void netInit(MessageReader _reader) {
 		super.netInit(_reader);
 		m_fEyeHeight = _reader.readFloat();
@@ -127,6 +130,7 @@ public class PlayerEntity extends Entity implements LiveEntity, NetworkEncoder {
 	/* (non-Javadoc)
 	 * @see org.codejive.world3d.net.NetworkEncoder#writeInit(org.codejive.world3d.net.MessageWriter)
 	 */
+	@Override
 	public void writeInit(MessageWriter _writer) {
 		super.writeInit(_writer);
 		_writer.writeFloat(getEyeHeight());

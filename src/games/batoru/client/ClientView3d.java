@@ -47,7 +47,7 @@ import games.batoru.net.ClientMessageHelper;
 
 /**
  * @author Tako
- * @version $Revision: 354 $
+ * @version $Revision: 363 $
  */
 public class ClientView3d implements NetworkDecoder {
 	private String m_sTitle;
@@ -93,6 +93,7 @@ public class ClientView3d implements NetworkDecoder {
 //		canvas.addMouseMotionListener(this);
 //		canvas.addKeyListener(this);
 		m_clientFrame.addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
 				stop();
 			}
@@ -248,7 +249,7 @@ class ClientViewRenderer implements GLEventListener, GuiMouseListener, GuiKeyLis
 		
 	public void init(GLAutoDrawable drawable) {
 		GL gl = drawable.getGL();
-		GLU glu = new GLU();
+//		GLU glu = new GLU();
 
 		System.err.println("INIT GL IS: " + gl.getClass().getName());
 
@@ -429,7 +430,7 @@ class ClientViewRenderer implements GLEventListener, GuiMouseListener, GuiKeyLis
 
 		// Check if the player wants to jump and if it is possible
 		float fGravFactor = avatar.getGravityFactor();
-		if (m_bKeyJump && (Math.abs(fGravFactor) > Universe.ALMOST_ZERO) && ((PlayerEntity)avatar).isOnSurface()) {
+		if (m_bKeyJump && (Math.abs(fGravFactor) > Universe.ALMOST_ZERO) && avatar.isOnSurface()) {
 			Vector3f jump = new Vector3f(avatar.getImpulse());
 			jump.add(VECTF_JUMP);
 			avatar.setImpulse(jump);
@@ -442,7 +443,7 @@ class ClientViewRenderer implements GLEventListener, GuiMouseListener, GuiKeyLis
 			// Make sure it's length is 1.0
 			movement.normalize();
 			// Scale the vector according to speed and elapsed time
-			float fSpeed = (((PlayerEntity)avatar).isOnSurface()) ? m_fSurfaceSpeed : m_fAirSpeed;
+			float fSpeed = (avatar.isOnSurface()) ? m_fSurfaceSpeed : m_fAirSpeed;
 			movement.scale(fSpeed / 10 * fElapsedTime);		// In Java3D a unit is 10m
 
 			// Rotate the movement vector so its translation is relative to the view port 
@@ -531,6 +532,7 @@ class ClientViewRenderer implements GLEventListener, GuiMouseListener, GuiKeyLis
 			});
 			add(b);
 			addKeyListener(new GuiKeyAdapter() {
+				@Override
 				public void keyPressed(GuiKeyEvent _event) {
 					switch (_event.getKeyCode()) {
 					case KeyEvent.VK_ESCAPE:
@@ -662,7 +664,7 @@ class ClientViewRenderer implements GLEventListener, GuiMouseListener, GuiKeyLis
 	
 	private void releaseMouse() {
 		// Center the mouse pointer
-		m_frame.setCursor(Cursor.DEFAULT_CURSOR);
+		m_frame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		m_bGrabMouse = false;
 	}
 	

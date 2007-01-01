@@ -5,6 +5,7 @@ package games.batoru.client;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 import org.codejive.world3d.Entity;
 import org.codejive.world3d.Universe;
@@ -40,6 +41,8 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 	public static final int STATE_CONNECTING = 1;
 	public static final int STATE_CONNECTED = 2;
 	public static final int STATE_DISCONNECTING = 3;
+	
+	private static Logger logger = Logger.getLogger(Client.class.getName());
 	
 	public Client() {
 		m_message = new MessagePacket();
@@ -86,7 +89,7 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 				m_finder.stop();
 			
 				// Just connect to the first server available for now
-				ServerInfo si = (ServerInfo)m_finder.getServers().get(0);
+				ServerInfo si = m_finder.getServers().get(0);
 			
 				// Create client message port 
 				m_client = new ConnectedMessagePort("Unconnected Client", si.getAddress(), si.getPort());
@@ -108,7 +111,7 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 								if (nServerPort < 0) {
 									nServerPort = 65536 + nServerPort;
 								}
-								Universe.log(this, "Server accepted connect request, remote port: " + nServerPort);
+								logger.info("Server accepted connect request, remote port: " + nServerPort);
 								int port = m_client.getPort();
 								m_client.stop();
 								m_client = new ConnectedMessagePort("Client #" + nServerPort, port, msg.getAddress(), nServerPort);
@@ -121,10 +124,10 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 							case ServerMessageHelper.MSG_CONNECT_DENY:
 								String sReason = msg.readString();
 								m_client.stop();
-								Universe.log(this, "Server denied connect request: " + sReason);
+								logger.info("Server denied connect request: " + sReason);
 								break;
 							default:
-								Universe.log(this, "unknown packet type (" + packetType + ")");
+								logger.info("unknown packet type (" + packetType + ")");
 								break;
 						}
 	
@@ -187,7 +190,7 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 	
 	private void _disconnect() {
 		m_nState = STATE_DISCONNECTED;
-		Universe.log(this, "disconnected");
+		logger.info("disconnected");
 		m_client.setName("Unconnected client");
 	}
 
@@ -199,12 +202,12 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 		switch (packetType) {
 			case ServerMessageHelper.MSG_DISCONNECT:
 				String sReason = _reader.readString();
-				Universe.log(this, "DISCONNECT message received: '" + sReason + "'");
+				logger.info("DISCONNECT message received: '" + sReason + "'");
 				_disconnect();
 				stop();
 				break;
 			case ServerMessageHelper.MSG_OPEN_TCP:
-				Universe.log(this, "OPEN TCP message received");
+				logger.info("OPEN TCP message received");
 				try {
 					m_tcpSocket = new Socket(m_client.getDestinationAddress(), m_client.getDestinationPort(), m_client.getAddress(), m_client.getPort());
 					MessageStream msg = new MessageStream(m_tcpSocket);
@@ -220,13 +223,13 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 				}
 				break;
 			case ServerMessageHelper.MSG_CLASS_LIST:
-				Universe.log(this, "CLASS LIST message received");
+				logger.info("CLASS LIST message received");
 				// Reading the list of classes we're going to use
 				cache.clearRegisteredInstances();
 				cache.clearRegisteredClasses();
 				String sClass;
 				while ((sClass = _reader.readString()).length() > 0) {
-					Universe.log(this, "adding class: " + sClass);
+					logger.info("adding class: " + sClass);
 					cache.registerClass(sClass, sClass);
 				}
 				// Load all the classes
@@ -240,19 +243,19 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 				}
 				break;
 			case ServerMessageHelper.MSG_SPAWN_ENTITY:
-				Universe.log(this, "SPAWN ENTITY message received");
+				logger.info("SPAWN ENTITY message received");
 				ClientMessageHelper.spawn(_reader);
 				break;
 			case ServerMessageHelper.MSG_UPDATE_ENTITY:
-				Universe.log(this, "UPDATE ENTITY message received");
+				logger.info("UPDATE ENTITY message received");
 				ClientMessageHelper.update(_reader);
 				break;
 			case ServerMessageHelper.MSG_KILL_ENTITY:
-				Universe.log(this, "KILL ENTITY message received");
+				logger.info("KILL ENTITY message received");
 				ClientMessageHelper.kill(_reader);
 				break;
 			case ServerMessageHelper.MSG_START_3D:
-				Universe.log(this, "START 3D message received");
+				logger.info("START 3D message received");
 				short nUniverseId = _reader.readShort();
 				short nAvatarId = _reader.readShort();
 				Universe universe = (Universe)cache.getInstance(nUniverseId);
@@ -260,7 +263,7 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 				startRendering(universe, avatar);
 				break;
 			default:
-				Universe.log(this, "unknown message type");
+				logger.info("unknown message type");
 				bOk = false;
 				break;
 		}

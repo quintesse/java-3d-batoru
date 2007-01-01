@@ -18,7 +18,7 @@ import org.codejive.world3d.Universe;
 
 /**
  * @author tako
- * @version $Revision: 352 $
+ * @version $Revision: 363 $
  */
 public class TreeEntity extends Entity {
 	private static int m_nTreeShapeList = -1;
@@ -34,6 +34,7 @@ public class TreeEntity extends Entity {
 		super(_universe, _position, 0.0f);
 	}
 	
+	@Override
 	public void initRendering(RenderContext _context) {
 		if (m_nTreeShapeList == -1) {
 			GL gl = _context.getGl();

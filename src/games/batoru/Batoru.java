@@ -6,14 +6,12 @@ package games.batoru;
 import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.event.*;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.*;
 
 import games.batoru.server.Server;
-import games.batoru.client.Client;
 import games.batoru.client.ClientView3d;
 
 /**
@@ -22,10 +20,10 @@ import games.batoru.client.ClientView3d;
 public class Batoru {
 	private static JFrame m_frame;
 	private static Server m_server;
-	private static List m_clients;
+	private static List<ClientView3d> m_clients;
 
 	public static void main(String[] args) {
-		m_clients = new LinkedList();
+		m_clients = new LinkedList<ClientView3d>();
 		
 		m_frame = new JFrame("Batoru");
 		Container pane = m_frame.getContentPane();
@@ -56,6 +54,7 @@ public class Batoru {
 		});
 
 		m_frame.addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
 				exitApplication();
 			}
@@ -69,11 +68,11 @@ public class Batoru {
 		if (m_server == null) {
 			m_server = new Server();
 			m_server.start();
-			_button.setLabel("Stop server");
+			_button.setText("Stop server");
 		} else {
 			m_server.stop();
 			m_server = null;
-			_button.setLabel("Start server");
+			_button.setText("Start server");
 		}
 	}
 	
@@ -84,9 +83,7 @@ public class Batoru {
 	}
 	
 	protected static void exitApplication() {
-		Iterator i = m_clients.iterator();
-		while (i.hasNext()) {
-			ClientView3d client = (ClientView3d)i.next();
+		for (ClientView3d client : m_clients) {
 			client.stop();
 		}
 		if (m_server != null) {

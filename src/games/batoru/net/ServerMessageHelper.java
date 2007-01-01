@@ -5,8 +5,9 @@ package games.batoru.net;
 
 import java.net.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.codejive.world3d.Universe;
 import org.codejive.world3d.net.*;
 
 /**
@@ -26,6 +27,8 @@ public class ServerMessageHelper {
 	public static final byte MSG_KILL_ENTITY = (byte)0x88;
 	public static final byte MSG_START_3D = (byte)0x89;
 	
+	private static Logger logger = Logger.getLogger(ServerMessageHelper.class.getName());
+	
 	public static void sendIThink(MessagePacket _packet, MessagePort _server) {
 		try {
 			_packet.clear();
@@ -34,10 +37,10 @@ public class ServerMessageHelper {
 			_packet.writeByteArray(InetAddress.getLocalHost().getAddress(), 0, 4);
 			_packet.writeInt(_server.getPort());
 			_packet.writeString(_server.getName());
-			Universe.log(ServerMessageHelper.class, "broadcasting server announcement");
+			logger.info("broadcasting server announcement");
 			_server.sendBroadcastPacket(_packet);
 		} catch (UnknownHostException e) {
-			System.err.println(e);
+			logger.log(Level.WARNING, "Could not broadcast server announcement", e);
 		}
 	}
 	
@@ -46,7 +49,7 @@ public class ServerMessageHelper {
 		_packet.writeInt(MAGIC_COOKIE);
 		_packet.writeByte(MSG_CONNECT_ACCEPT);
 		_packet.writeShort((short)_client.getPort());
-		Universe.log(ServerMessageHelper.class, "sending CONNECT ACCEPT reply");
+		logger.info("sending CONNECT ACCEPT reply");
 		_server.sendPacket(_packet.getAddress(), _packet.getPort(), _packet);
 	}
 	
@@ -55,7 +58,7 @@ public class ServerMessageHelper {
 		_packet.writeInt(MAGIC_COOKIE);
 		_packet.writeByte(MSG_CONNECT_DENY);
 		_packet.writeString(_sReason);
-		Universe.log(ServerMessageHelper.class, "sending CONNECT DENY reply");
+		logger.info("sending CONNECT DENY reply");
 		_server.sendPacket(_packet.getAddress(), _packet.getPort(), _packet);
 	}
 	
@@ -63,21 +66,21 @@ public class ServerMessageHelper {
 		_server.initPacket(_packet);
 		_packet.writeByte(MSG_DISCONNECT);
 		_packet.writeString(_sReason);
-		Universe.log(ServerMessageHelper.class, "sending DISCONNECT");
+		logger.info("sending DISCONNECT");
 		_server.sendPacket(_packet);
 	}
 	
 	public static void sendOpenTcp(MessagePacket _packet, MessagePort _server) {
 		_server.initPacket(_packet);
 		_packet.writeByte(MSG_OPEN_TCP);
-		Universe.log(ServerMessageHelper.class, "sending OPEN TCP");
+		logger.info("sending OPEN TCP");
 		_server.sendPacket(_packet);
 	}
 	
 	public static void addClasses(MessageWriter _writer) {
 		_writer.writeByte(MSG_CLASS_LIST);
-		Universe.log(ServerMessageHelper.class, "sending CLASS LIST");
-		List classes = NetworkClassCache.getServerCache().getRegisteredClasses();
+		logger.info("sending CLASS LIST");
+		List<NetworkClass> classes = NetworkClassCache.getServerCache().getRegisteredClasses();
 		for (int i = 0; i < classes.size(); i++) {
 			_writer.writeString(NetworkClassCache.getServerCache().getClientClassName(i));
 		}
@@ -88,7 +91,7 @@ public class ServerMessageHelper {
 		_writer.writeByte(MSG_SPAWN_ENTITY);
 		_writer.writeShort(_nClassIndex);
 		_writer.writeShort(_nInstanceId);
-		Universe.log(ServerMessageHelper.class, "adding SPAWN ENTITY message for " + NetworkClassCache.getServerCache().getClientClassName(_nClassIndex) + " (#" + _nInstanceId + ")");
+		logger.info("adding SPAWN ENTITY message for " + NetworkClassCache.getServerCache().getClientClassName(_nClassIndex) + " (#" + _nInstanceId + ")");
 	}
 	
 	public static void addSpawn(MessageWriter _writer, NetworkEncoder _object) {
@@ -99,7 +102,7 @@ public class ServerMessageHelper {
 	public static void addUpdate(MessageWriter _writer, short _nInstanceId) {
 		_writer.writeByte(MSG_UPDATE_ENTITY);
 		_writer.writeShort(_nInstanceId);
-		Universe.log(ServerMessageHelper.class, "adding UPDATE ENTITY message for #" + _nInstanceId);
+		logger.info("adding UPDATE ENTITY message for #" + _nInstanceId);
 	}
 	
 	public static void addUpdate(MessageWriter _writer, NetworkEncoder _object) {
@@ -110,7 +113,7 @@ public class ServerMessageHelper {
 	public static void addKill(MessageWriter _writer, short _nInstanceId) {
 		_writer.writeByte(MSG_KILL_ENTITY);
 		_writer.writeShort(_nInstanceId);
-		Universe.log(ServerMessageHelper.class, "adding KILL ENTITY message for #" + _nInstanceId);
+		logger.info("adding KILL ENTITY message for #" + _nInstanceId);
 	}
 	
 	public static void addKill(MessageWriter _writer, NetworkEncoder _object) {
@@ -122,6 +125,6 @@ public class ServerMessageHelper {
 		_writer.writeByte(MSG_START_3D);
 		_writer.writeShort(universe.getInstanceId());
 		_writer.writeShort(avatar.getInstanceId());
-		Universe.log(ServerMessageHelper.class, "adding START 3D message");
+		logger.info("adding START 3D message");
 	}
 }

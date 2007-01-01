@@ -3,9 +3,10 @@
  */
 package games.batoru.net;
 
+import java.util.logging.Logger;
+
 import javax.vecmath.*;
 
-import org.codejive.world3d.Universe;
 import org.codejive.world3d.net.*;
 
 /**
@@ -21,24 +22,26 @@ public class ClientMessageHelper {
 	
 	public static final byte STATE_FIREPRIMARY = (byte)0x01;
 	
+	private static Logger logger = Logger.getLogger(ClientMessageHelper.class.getName());
+	
 	public static void sendConnectRequest(MessagePacket _packet, MessagePort _client) {
 		_packet.clear();
 		_packet.writeByte(MSG_CONNECT_REQUEST);
-		Universe.log(_client, "sending CONNECT REQUEST");
+		logger.info(_client.getName() + "sending CONNECT REQUEST");
 		_client.sendPacket(_client.getDestinationAddress(), _client.getDestinationPort(), _packet);
 	}
 	
 	public static void sendDisconnectRequest(MessagePacket _packet, MessagePort _client) {
 		_client.initPacket(_packet);
 		_packet.writeByte(MSG_DISCONNECT);
-		Universe.log(_client, "sending DISCONNECT message");
+		logger.info(_client.getName() + "sending DISCONNECT message");
 		_client.sendPacket(_packet);
 	}
 	
 	public static void sendReady(MessagePacket _packet, MessagePort _client) {
 		_client.initPacket(_packet);
 		_packet.writeByte(MSG_READY);
-		Universe.log(_client, "sending READY message");
+		logger.info(_client.getName() + "sending READY message");
 		_client.sendPacket(_packet);
 	}
 	
@@ -65,19 +68,20 @@ public class ClientMessageHelper {
 		_writer.writeByte(nFlags);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static NetworkDecoder spawn(MessageReader _reader) {
 		NetworkDecoder obj = null;
 		short nClassIndex = _reader.readShort();
 		short nInstanceId = _reader.readShort();
 		String sClassName = NetworkClassCache.getClientCache().getClientClassName(nClassIndex);
 		try {
-			Class cls = Class.forName(sClassName);
-			obj = (NetworkDecoder)cls.newInstance();
+			Class<NetworkDecoder> cls = (Class<NetworkDecoder>) Class.forName(sClassName);
+			obj = cls.newInstance();
 			NetworkClassCache.getClientCache().registerInstance(nInstanceId, obj);
 			obj.netInit(_reader);
-			Universe.log(ClientMessageHelper.class, "instantiated: " + sClassName + " (# " + nInstanceId + ")");
+			logger.info("instantiated: " + sClassName + " (# " + nInstanceId + ")");
 		} catch (Exception e) {
-			Universe.log(ClientMessageHelper.class, "could not instantiate: " + sClassName + " because: " + e.getMessage());
+			logger.info("could not instantiate: " + sClassName + " because: " + e.getMessage());
 		}
 		return obj;
 	}
@@ -86,13 +90,13 @@ public class ClientMessageHelper {
 		short nInstanceId = _reader.readShort();
 		NetworkDecoder obj = NetworkClassCache.getClientCache().getInstance(nInstanceId);
 		obj.netUpdate(_reader);
-		Universe.log(ClientMessageHelper.class, "updated # " + nInstanceId);
+		logger.info("updated # " + nInstanceId);
 	}
 	
 	public static void kill(MessageReader _reader) {
 		short nInstanceId = _reader.readShort();
 		NetworkDecoder obj = NetworkClassCache.getClientCache().getInstance(nInstanceId);
 		obj.netKill(_reader);
-		Universe.log(ClientMessageHelper.class, "killed # " + nInstanceId);
+		logger.info("killed # " + nInstanceId);
 	}
 }

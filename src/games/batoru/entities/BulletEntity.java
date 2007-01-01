@@ -15,16 +15,15 @@ import javax.media.opengl.glu.GLUquadric;
 import org.codejive.utils4gl.GLColor;
 import org.codejive.utils4gl.RenderContext;
 import org.codejive.utils4gl.RenderObserver;
-import org.codejive.world3d.Camera;
 import org.codejive.world3d.Entity;
 import org.codejive.world3d.Universe;
 
 /**
  * @author tako
- * @version $Revision: 338 $
+ * @version $Revision: 363 $
  */
 public class BulletEntity extends Entity {
-	private int m_nBulletShapeList;
+//	private int m_nBulletShapeList;
 	
 	private static final GLColor m_bullet2Color = new GLColor(Color.YELLOW, 0.7f);
 	
@@ -36,11 +35,12 @@ public class BulletEntity extends Entity {
 		super(_universe, _position, _impulse, _fGravityFactor);
 	}
 	
+	@Override
 	public void initRendering(RenderContext _context) {
-		GL gl = _context.getGl();
+/*		GL gl = _context.getGl();
 		GLU glu = _context.getGlu();
-
-/*		m_nBulletShapeList = gl.glGenLists(1);
+		
+		m_nBulletShapeList = gl.glGenLists(1);
 		gl.glNewList(m_nBulletShapeList, GL.GL_COMPILE);
 
 		gl.glDepthMask(false);

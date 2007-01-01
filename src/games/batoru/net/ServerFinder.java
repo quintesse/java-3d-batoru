@@ -6,24 +6,26 @@ package games.batoru.net;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.logging.Logger;
 
-import org.codejive.world3d.*;
 import org.codejive.world3d.net.*;
 
 /**
  * @author Tako
  */
 public class ServerFinder extends MessagePort {
-	private LinkedList m_servers;
+	private LinkedList<ServerInfo> m_servers;
 	private ServerlistChangedListener m_listchangeListener;
+	
+	private static Logger logger = Logger.getLogger(ServerFinder.class.getName());
 	
 	public ServerFinder() {
 		super("Server Finder", 22344);
-		m_servers = new LinkedList();
+		m_servers = new LinkedList<ServerInfo>();
 		m_listchangeListener = null;
 	}
 	
-	public List getServers() {
+	public List<ServerInfo> getServers() {
 		return Collections.unmodifiableList(m_servers);
 	}
 	
@@ -41,6 +43,7 @@ public class ServerFinder extends MessagePort {
 		}
 	}
 	
+	@Override
 	public void handlePacket(MessagePacket _packet) {
 		int nCookie = _packet.readInt();
 		if (nCookie == ServerMessageHelper.MAGIC_COOKIE) {
@@ -62,10 +65,10 @@ public class ServerFinder extends MessagePort {
 					notifyServerlistChangedListeners();
 				} catch (UnknownHostException e) { /* ignore */ }
 			} else {
-				Universe.log(this, "unsupported server protocol version");
+				logger.warning("unsupported server protocol version");
 			}
 		} else {
-			Universe.log(this, "unknown server broadcast packet received");
+			logger.warning("unknown server broadcast packet received");
 		}
 	}
 }

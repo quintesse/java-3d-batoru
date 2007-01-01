@@ -9,13 +9,11 @@ import games.batoru.net.ServerMessageHelper;
 import java.awt.Color;
 import java.awt.Point;
 import java.util.Random;
+import java.util.logging.Logger;
 
 import javax.vecmath.*;
 
 import org.codejive.world3d.*;
-import org.codejive.world3d.PhysicalEntity;
-import org.codejive.world3d.SurfaceInformation;
-import org.codejive.world3d.Universe;
 import org.codejive.world3d.net.*;
 import org.codejive.utils4gl.*;
 import org.codejive.utils4gl.geometries.*;
@@ -87,6 +85,8 @@ public class PatchyLandscape implements NetworkEncoder, NetworkDecoder, Landscap
 	private float m_vfHeights[][];
 	private LandscapePatch m_vPatches[][];
 
+	private static Logger logger = Logger.getLogger(PatchyLandscape.class.getName());
+	
 	public PatchyLandscape() {
 		m_nClassIndex = NetworkClassCache.getClientCache().getClassIndex(this.getClass().getName());
 		m_nIstanceId = NetworkInstanceIdGenerator.getNewId();
@@ -155,7 +155,7 @@ public class PatchyLandscape implements NetworkEncoder, NetworkDecoder, Landscap
 			}
 		}
 		
-		Universe.log(this, "Created landscape: " + m_nWidth + "x" + m_nHeight + " (seed #" + m_lSeed + ")");
+		logger.info("Created landscape: " + m_nWidth + "x" + m_nHeight + " (seed #" + m_lSeed + ")");
 	}
 	
 	private void tectonics() {

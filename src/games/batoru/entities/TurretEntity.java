@@ -6,6 +6,7 @@ package games.batoru.entities;
 import games.batoru.EntityBuilder;
 
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 import javax.vecmath.*;
 
@@ -57,6 +58,8 @@ public class TurretEntity extends Entity implements LiveEntity {
 	private static final Point3f m_boxPos = new Point3f(0.0f, 0.0f, 0.0f);
 	private static final Vector3f m_barrelPos = new Vector3f(1.0f, 0.0f, 0.0f);
 	
+	private static Logger logger = Logger.getLogger(TurretEntity.class.getName());
+	
 	public TurretEntity() {
 		super();
 		m_barrelDir.set(Vectors.VECTF_IN);
@@ -89,7 +92,7 @@ public class TurretEntity extends Entity implements LiveEntity {
 					if (i.hasNext()) {
 						m_nState = STATE_TRACKING;
 						m_target = (Entity)i.next();
-						Universe.log(this, "State changed to TRACKING " + m_target.toString());
+						logger.info("State changed to TRACKING " + m_target.toString());
 					}
 					break;
 				case STATE_TRACKING:
@@ -100,7 +103,7 @@ public class TurretEntity extends Entity implements LiveEntity {
 						m_barrelDir.set(m_tmpVect);
 
 						if ((_fTime - m_fLastFired) >= FIRE_TIME) {
-							Universe.log(this, "Shot fired @" + m_target.toString());
+							logger.info("Shot fired @" + m_target.toString());
 							Point3f p = (Point3f)getPosition().clone();
 							p.y += 1.6f;
 							Entity bullet = EntityBuilder.createBullet(getUniverse(), p, m_tmpVect, 20.0f, 5.0f);
@@ -116,11 +119,11 @@ public class TurretEntity extends Entity implements LiveEntity {
 						pt.setShapeRay(q, v);
 						PickResult pr = pt.pickClosest();
 						m_transShape.setPickable(isSolid());
-//						Universe.log("### turret sees: ");
+//						logger.info("### turret sees: ");
 						if ((pr != null) && pr.getSceneGraphPath().nodeCount() > 0) {
 							Entity pick = (Entity)pr.getSceneGraphPath().getNode(0).getUserData();
 							PickIntersection pi = pr.getClosestIntersection(q);
-//							Universe.log("    " + pr.getObject() + " - " + pick + " dist: " + pi.getDistance());
+//							logger.info("    " + pr.getObject() + " - " + pick + " dist: " + pi.getDistance());
 							if ((pick != null) && (pick instanceof Player)) {
 								Point3d c = new Point3d(0.0d, 0.0d, 0.0d);
 								Point3d t = new Point3d(m_tmpVect);
@@ -144,14 +147,14 @@ public class TurretEntity extends Entity implements LiveEntity {
 								}
 							}
 						} else {
-//							Universe.log("turret sees: nothing!");
+//							logger.info("turret sees: nothing!");
 						}
 */
 					} else {
 						m_nState = STATE_WAITING;
 						m_target = null;
 						m_fWaitHeartbeat = _fTime;
-						Universe.log(this, "State changed to WAITING");
+						logger.info("State changed to WAITING");
 					}
 					break;
 				case STATE_WAITING:
@@ -160,11 +163,11 @@ public class TurretEntity extends Entity implements LiveEntity {
 						if (i.hasNext()) {
 							m_nState = STATE_TRACKING;
 							m_target = (Entity)i.next();
-							Universe.log(this, "State changed to TRACKING " + m_target.toString());
+							logger.info("State changed to TRACKING " + m_target.toString());
 						}
 					} else {
 						m_nState = STATE_IDLE;
-						Universe.log(this, "State changed to IDLE");
+						logger.info("State changed to IDLE");
 					}
 					break;
 			}

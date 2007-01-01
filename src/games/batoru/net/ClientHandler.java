@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
@@ -32,6 +33,8 @@ public class ClientHandler extends ConnectedMessagePort {
 		
 	private Vector3f m_tmpVec = new Vector3f();
 	
+	private static Logger logger = Logger.getLogger(ClientHandler.class.getName());
+	
 	public ClientHandler(Server _server, InetAddress _address, int _nPort) {
 		super("ClientHandler", _address, _nPort);
 		m_server = _server;
@@ -50,13 +53,13 @@ public class ClientHandler extends ConnectedMessagePort {
 	}
 	
 	protected MessageStream requestConnection() {
-		Universe.log(this, "asking remote client to set up a TCP connection");
+		logger.info("asking remote client to set up a TCP connection");
 		ServerMessageHelper.sendOpenTcp(m_message, this);
 		
 		try {
 			m_tcpServer = new ServerSocket(getPort());
 			m_tcpSocket = m_tcpServer.accept();
-			Universe.log(this, "TCP connection established with remote client");
+			logger.info("TCP connection established with remote client");
 			MessageStream ms = new MessageStream(m_tcpSocket);
 			return ms;
 		} catch (IOException e) {
@@ -65,10 +68,10 @@ public class ClientHandler extends ConnectedMessagePort {
 	}
 	
 	public void doInitialization() throws InterruptedException {
-		Universe.log(this, "starting remote client initialization");
+		logger.info("starting remote client initialization");
 
 		// Wait for READY message
-		Universe.log(this, "waiting for remote client READY");
+		logger.info("waiting for remote client READY");
 		receivePacket();
 		
 		// Ask the client to open a TCP connection to us
@@ -96,6 +99,7 @@ public class ClientHandler extends ConnectedMessagePort {
 		out.close();
 	}
 
+	@Override
 	public void handlePacket(MessagePacket _packet) {
 		super.handlePacket(_packet);
 		while (_packet.hasMoreData()) {
@@ -104,27 +108,27 @@ public class ClientHandler extends ConnectedMessagePort {
 			switch (packetType) {
 				case ClientMessageHelper.MSG_DISCONNECT:
 					m_server.removeClient(this);
-					Universe.log(this, "disconnected");
+					logger.info("disconnected");
 					stop();
 					break;
 				case ClientMessageHelper.MSG_MOVEMENT:
-					Universe.log(this, "movement update received");
+					logger.info("movement update received");
 					m_tmpVec.set(_packet.readFloat(), _packet.readFloat(), _packet.readFloat());
 					if (m_avatar != null) {
 						m_avatar.getPosition().add(m_tmpVec);
 					}
 					break;
 				case ClientMessageHelper.MSG_ORIENTATION:
-					Universe.log(this, "orientation update received");
+					logger.info("orientation update received");
 					if (m_avatar != null) {
 						m_avatar.setOrientation(_packet.readFloat(), _packet.readFloat(), _packet.readFloat());
 					}
 					break;
 				case ClientMessageHelper.MSG_STATE_FLAGS:
-					Universe.log(this, "state flags received");
+					logger.info("state flags received");
 					byte nFlags = _packet.readByte();
 					if ((nFlags & ClientMessageHelper.STATE_FIREPRIMARY) != 0) {
-						Universe.log(this, "client holds down the primary fire button");
+						logger.info("client holds down the primary fire button");
 						EntityBuilder.createBullet(m_server.getUniverse(), m_avatar.getPosition(), m_avatar.getOrientation(), 20.0f, 5.0f);
 // TODO This code shouldn't be here!!!!!!!!!! Testing purposes only!!!!
 //						initPacket(m_message);
@@ -133,7 +137,7 @@ public class ClientHandler extends ConnectedMessagePort {
 					}
 					break;
 				default:
-					Universe.log(this, "unknown packet type received");
+					logger.info("unknown packet type received");
 					break;
 			}
 		}
