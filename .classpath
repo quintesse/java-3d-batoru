@@ -2,9 +2,9 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="src" path="/utils4gl"/>
-	<classpathentry kind="src" path="/gui4gl"/>
-	<classpathentry kind="src" path="/world3d"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jogl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/java-3d-gui4gl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/java-3d-utils4gl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/java-3d-world3d"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
