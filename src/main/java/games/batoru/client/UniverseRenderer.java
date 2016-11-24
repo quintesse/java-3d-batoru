@@ -11,9 +11,6 @@ import games.batoru.entities.PlayerEntity;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.glu.GLU;
-
 import org.codejive.utils4gl.RenderContext;
 import org.codejive.utils4gl.RenderObserver;
 import org.codejive.utils4gl.Renderable;
@@ -21,6 +18,9 @@ import org.codejive.utils4gl.Vectors;
 import org.codejive.world3d.Entity;
 import org.codejive.world3d.LiveEntity;
 import org.codejive.world3d.Universe;
+
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.glu.GLU;
 
 /**
  * @author Tako
@@ -51,7 +51,7 @@ public class UniverseRenderer implements Renderable {
 	}
 	
 	public void render(RenderContext _context, RenderObserver _observer) {
-		GL gl = _context.getGl();
+		GL2 gl = _context.getGl();
 		GLU glu = _context.getGlu();
 
 		Point3f pos = m_avatar.getPosition();
@@ -85,7 +85,7 @@ public class UniverseRenderer implements Renderable {
 	}		
 
 	void renderObjects(RenderContext _context, RenderObserver _observer) {
-		GL gl = _context.getGl();
+		GL2 gl = _context.getGl();
 
 		Iterator<Renderable> i = m_universe.getRenderables();
 		while (i.hasNext()) {

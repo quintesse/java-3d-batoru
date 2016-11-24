@@ -155,7 +155,6 @@ public class Server {
 	} 
 	
 	public void runUniverse() {
-		int nFrameNr = 0;
 		float fLastAge = 0;
 		float fCurrentAge = m_universe.getAge();
 		
@@ -163,7 +162,6 @@ public class Server {
 			if (fLastAge > 0) {
 				float fElapsedTime = fCurrentAge - fLastAge;
 				m_universe.handleFrame(fElapsedTime);
-				nFrameNr++;
 			}
 			fLastAge = fCurrentAge;
 			

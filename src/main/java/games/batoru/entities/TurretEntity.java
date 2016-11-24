@@ -10,16 +10,16 @@ import java.util.logging.Logger;
 
 import javax.vecmath.*;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.glu.GLU;
-import javax.media.opengl.glu.GLUquadric;
-import com.sun.opengl.util.GLUT;
-
 import org.codejive.utils4gl.GLColor;
 import org.codejive.utils4gl.RenderContext;
 import org.codejive.utils4gl.RenderObserver;
 import org.codejive.utils4gl.Vectors;
 import org.codejive.world3d.*;
+
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.glu.GLU;
+import com.jogamp.opengl.glu.GLUquadric;
+import com.jogamp.opengl.util.gl2.GLUT;
 
 /**
  * @author tako
@@ -79,7 +79,7 @@ public class TurretEntity extends Entity implements LiveEntity {
 	}
 	
 	public void heartbeat(float _fTime) {
-		Iterator i;
+		Iterator<LiveEntity> i;
 		
 		if (m_fLastHeartbeat > 0) {
 			float fSecs = _fTime - m_fLastHeartbeat; 
@@ -106,7 +106,7 @@ public class TurretEntity extends Entity implements LiveEntity {
 							logger.info("Shot fired @" + m_target.toString());
 							Point3f p = (Point3f)getPosition().clone();
 							p.y += 1.6f;
-							Entity bullet = EntityBuilder.createBullet(getUniverse(), p, m_tmpVect, 20.0f, 5.0f);
+							EntityBuilder.createBullet(getUniverse(), p, m_tmpVect, 20.0f, 5.0f);
 							m_fLastFired = _fTime;
 						}
 /*
@@ -176,7 +176,7 @@ public class TurretEntity extends Entity implements LiveEntity {
 	}
 
 	public void render(RenderContext _context, RenderObserver _observer) {
-		GL gl = _context.getGl();
+		GL2 gl = _context.getGl();
 		GLU glu = _context.getGlu();
 		GLUT glut = _context.getGlut();
 

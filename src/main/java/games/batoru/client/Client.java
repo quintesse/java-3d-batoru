@@ -14,6 +14,7 @@ import org.codejive.world3d.net.MessagePacket;
 import org.codejive.world3d.net.MessagePort;
 import org.codejive.world3d.net.MessageReader;
 import org.codejive.world3d.net.MessageStream;
+import org.codejive.world3d.net.NetworkClass;
 import org.codejive.world3d.net.NetworkClassCache;
 
 import games.batoru.net.ClientMessageHelper;
@@ -234,7 +235,7 @@ public class Client implements Runnable, ServerFinder.ServerlistChangedListener 
 				}
 				// Load all the classes
 				for (int i = 0; i < cache.getRegisteredClasses().size(); i++) {
-					Class cls = cache.getClientClass(i);
+					Class<NetworkClass> cls = cache.getClientClass(i);
 					if (cls == null) {
 						// Missing class, disconnect from the server
 						System.err.println("Could not load class: " + cache.getClientClassName(i));

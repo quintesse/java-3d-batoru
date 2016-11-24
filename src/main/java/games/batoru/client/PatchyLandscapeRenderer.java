@@ -2,8 +2,6 @@ package games.batoru.client;
 
 import javax.vecmath.*;
 
-import javax.media.opengl.GL;
-
 import org.codejive.utils4gl.RenderContext;
 import org.codejive.utils4gl.RenderObserver;
 import org.codejive.utils4gl.Renderable;
@@ -11,6 +9,8 @@ import org.codejive.utils4gl.geometries.Geometry;
 import org.codejive.utils4gl.geometries.TriangleStripGeometry;
 import org.codejive.utils4gl.geometries.VertexBuffer;
 import org.codejive.world3d.Universe;
+
+import com.jogamp.opengl.GL2;
 
 import games.batoru.PatchyLandscape;
 
@@ -39,7 +39,7 @@ public class PatchyLandscapeRenderer implements Renderable {
 	}
 	
 	public void initRendering(RenderContext _context) {
-		GL gl = _context.getGl();
+		GL2 gl = _context.getGl();
 		
 /*		m_nTerrainList = gl.glGenLists(1);
 		gl.glNewList(m_nTerrainList, GL.GL_COMPILE);
@@ -47,25 +47,25 @@ public class PatchyLandscapeRenderer implements Renderable {
 		gl.glEndList();
 */		
 		m_geo = createGeo(gl);
-		gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
-		gl.glVertexPointer(3, GL.GL_FLOAT, 0, m_geo.getBuffer().getVertices());
+		gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+		gl.glVertexPointer(3, GL2.GL_FLOAT, 0, m_geo.getBuffer().getVertices());
 		// textures
-		gl.glEnableClientState(GL.GL_TEXTURE_COORD_ARRAY);
-		gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, m_geo.getBuffer().getTexCoords());
+		gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+		gl.glTexCoordPointer(2, GL2.GL_FLOAT, 0, m_geo.getBuffer().getTexCoords());
 	}
 	
 	public void render(RenderContext _context, RenderObserver _observer) {
-		GL gl = _context.getGl();
+		GL2 gl = _context.getGl();
 		
 		_context.getTexture(0).bind();
 //		gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 //		gl.glBegin(GL.GL_TRIANGLE_STRIP);
 //		gl.glCallList(m_nTerrainList);
 //		gl.glEnd();
-		gl.glDrawArrays(GL.GL_TRIANGLE_STRIP, 0, m_geo.getBuffer().getSize());
+		gl.glDrawArrays(GL2.GL_TRIANGLE_STRIP, 0, m_geo.getBuffer().getSize());
 	}
 	
-	private void renderGeo(GL _gl) {
+	private void renderGeo(GL2 _gl) {
 		float vfHeights[][] = m_model.getHeights();
 		Point3f origin = m_model.getOrigin();
 		boolean bSwitchDirection = false;
@@ -91,7 +91,7 @@ public class PatchyLandscapeRenderer implements Renderable {
 		}
 	}
 	
-	private Geometry createGeo(GL _gl) {
+	private Geometry createGeo(GL2 _gl) {
 		float vfHeights[][] = m_model.getHeights();
 		Point3f origin = m_model.getOrigin();
 		boolean bSwitchDirection = false;

@@ -5,8 +5,6 @@ package games.batoru.entities;
 
 import javax.vecmath.*;
 
-import javax.media.opengl.GL;
-
 import org.codejive.utils4gl.RenderContext;
 import org.codejive.utils4gl.RenderObserver;
 import org.codejive.utils4gl.Vectors;
@@ -15,6 +13,8 @@ import org.codejive.world3d.loaders.md3.MD3Loader;
 import org.codejive.world3d.net.MessageReader;
 import org.codejive.world3d.net.MessageWriter;
 import org.codejive.world3d.net.NetworkEncoder;
+
+import com.jogamp.opengl.GL2;
 
 /**
  * @author tako
@@ -108,14 +108,14 @@ public class PlayerEntity extends Entity implements LiveEntity, NetworkEncoder {
 	}
 	
 	public void render(RenderContext _context, RenderObserver _observer) {
-		GL gl = _context.getGl();
+		GL2 gl = _context.getGl();
 		gl.glTranslatef(0.0f, -1.4f, 0.0f);
 		gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
 		gl.glScalef(0.03f, 0.03f, 0.03f);
 		gl.glColor3f(1, 1, 1);
-		gl.glCullFace(GL.GL_FRONT);    // Quake3 uses front face culling apparently
+		gl.glCullFace(GL2.GL_FRONT);    // Quake3 uses front face culling apparently
 		m_lara.DrawModel();
-		gl.glCullFace(GL.GL_BACK);
+		gl.glCullFace(GL2.GL_BACK);
 	}
 
 	/* (non-Javadoc)

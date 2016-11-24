@@ -3,31 +3,19 @@
  */
 package games.batoru.client;
 
-import java.awt.AWTException;
-import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.DisplayMode;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Point;
+import games.batoru.EntityBuilder;
+import games.batoru.entities.PlayerEntity;
+import games.batoru.net.ClientMessageHelper;
+
 import java.awt.Robot;
-import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.text.NumberFormat;
 
-import javax.swing.JFrame;
-import javax.vecmath.*;
+import javax.vecmath.Matrix3f;
+import javax.vecmath.Point3f;
+import javax.vecmath.Vector3f;
 
-import javax.media.opengl.*;
-import javax.media.opengl.glu.GLU;
-
-import com.sun.opengl.util.*;
-
-import org.codejive.world3d.*;
 import org.codejive.gui4gl.events.GuiActionEvent;
 import org.codejive.gui4gl.events.GuiActionListener;
 import org.codejive.gui4gl.events.GuiKeyAdapter;
@@ -36,14 +24,36 @@ import org.codejive.gui4gl.events.GuiKeyListener;
 import org.codejive.gui4gl.events.GuiMouseEvent;
 import org.codejive.gui4gl.events.GuiMouseListener;
 import org.codejive.gui4gl.themes.Theme;
-import org.codejive.gui4gl.widgets.*;
-import org.codejive.world3d.net.*;
-import org.codejive.utils4gl.*;
-import org.codejive.utils4gl.textures.*;
+import org.codejive.gui4gl.widgets.Button;
+import org.codejive.gui4gl.widgets.Screen;
+import org.codejive.gui4gl.widgets.Text;
+import org.codejive.gui4gl.widgets.Window;
+import org.codejive.utils4gl.FrameRateCounter;
+import org.codejive.utils4gl.RenderContext;
+import org.codejive.utils4gl.SimpleFrameRateCounter;
+import org.codejive.utils4gl.Vectors;
+import org.codejive.utils4gl.textures.Texture;
+import org.codejive.utils4gl.textures.TextureReader;
+import org.codejive.world3d.Camera;
+import org.codejive.world3d.Entity;
+import org.codejive.world3d.Universe;
+import org.codejive.world3d.net.MessagePacket;
+import org.codejive.world3d.net.MessagePort;
+import org.codejive.world3d.net.MessageReader;
+import org.codejive.world3d.net.NetworkDecoder;
 
-import games.batoru.EntityBuilder;
-import games.batoru.entities.PlayerEntity;
-import games.batoru.net.ClientMessageHelper;
+import com.jogamp.newt.Display;
+import com.jogamp.newt.NewtFactory;
+import com.jogamp.newt.opengl.GLWindow;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.glu.GLU;
+import com.jogamp.opengl.glu.gl2.GLUgl2;
+import com.jogamp.opengl.util.Animator;
+import com.jogamp.opengl.util.gl2.GLUT;
 
 /**
  * @author Tako
@@ -54,8 +64,7 @@ public class ClientView3d implements NetworkDecoder {
 	private int m_nWidth, m_nHeight;
 	private boolean m_bFullscreen;
 
-	private JFrame m_clientFrame;
-	private GraphicsDevice m_device;
+	private GLWindow m_glWindow;
 	private Animator m_animator;
 	
 	private static final int DEFAULT_WIDTH = 1024;
@@ -73,77 +82,34 @@ public class ClientView3d implements NetworkDecoder {
 	}
 
 	public void start() {
-		String sTitle = m_sTitle;
-		if (!m_bFullscreen) {
-			sTitle += " (Press <F10> to release mouse)";
-		}
-		m_clientFrame = new JFrame(sTitle);
-		
-		ClientViewRenderer renderer = new ClientViewRenderer(this, m_clientFrame);
+        Display display = NewtFactory.createDisplay(null);
+        com.jogamp.newt.Screen screen = NewtFactory.createScreen(display, 0);
+        GLProfile glProfile = GLProfile.get(GLProfile.GL2);
+        GLCapabilities glCapabilities = new GLCapabilities(glProfile);
+        m_glWindow = GLWindow.create(screen, glCapabilities);
 
-		GLCanvas canvas = new GLCanvas(new GLCapabilities());
-		canvas.setSize(m_nWidth, m_nHeight);
-		canvas.setIgnoreRepaint(true);
+        m_glWindow.setSize(m_nWidth, m_nHeight);
+        m_glWindow.setPosition(50, 50);
+        m_glWindow.setUndecorated(false);
+        m_glWindow.setAlwaysOnTop(false);
+        m_glWindow.setFullscreen(m_bFullscreen);
+        m_glWindow.setPointerVisible(false);
+        m_glWindow.confinePointer(true);
+        m_glWindow.setTitle(m_sTitle);
 
-		m_clientFrame.getContentPane().setLayout(new BorderLayout());
-		m_clientFrame.getContentPane().add(canvas, BorderLayout.CENTER);
+        m_glWindow.setVisible(true);
 
-		canvas.addGLEventListener(renderer);
-//		canvas.addMouseListener(this);
-//		canvas.addMouseMotionListener(this);
-//		canvas.addKeyListener(this);
-		m_clientFrame.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				stop();
-			}
-		});
-		
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		m_clientFrame.setSize(m_nWidth, m_nHeight);
-		m_clientFrame.setLocation(
-			(screenSize.width - m_clientFrame.getWidth()) / 2,
-			(screenSize.height - m_clientFrame.getHeight()) / 2
-		);
+		ClientViewRenderer renderer = new ClientViewRenderer(this, m_glWindow);
+        m_glWindow.addGLEventListener(renderer);
 
-		if (m_bFullscreen) {
-			m_clientFrame.setUndecorated(true);
-			m_device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-			m_device.setFullScreenWindow(m_clientFrame);
-			m_device.setDisplayMode(
-				findDisplayMode(
-					m_device.getDisplayModes(),
-					m_nWidth, m_nHeight,
-					m_device.getDisplayMode().getBitDepth(),
-					m_device.getDisplayMode().getRefreshRate()
-				)
-			);
-		} else {
-			m_clientFrame.setVisible(true);
-		}
-
-		canvas.requestFocus();
-		
-		// Use debug pipeline
-		//    canvas.setGL(new DebugGL(canvas.getGL()));
-		System.err.println("CANVAS GL IS: " + canvas.getGL().getClass().getName());
-
-		m_animator = new Animator(canvas);
-		m_animator.start();
+        m_animator = new Animator(m_glWindow);
+        m_animator.start();		
 	}
 	
 	public void stop() {
 		if (m_animator != null) {
 			m_animator.stop();
 			m_animator = null;
-		}
-		if (m_device != null) {
-			m_device.setFullScreenWindow(null);
-			m_device = null;
-		}
-		if (m_clientFrame != null) {
-			m_clientFrame.dispose();
-			m_clientFrame = null;
 		}
 	}
 	
@@ -158,44 +124,11 @@ public class ClientView3d implements NetworkDecoder {
 	public void netKill(MessageReader _reader) {
 		stop();
 	}
-
-	private DisplayMode findDisplayMode(DisplayMode[] displayModes, int requestedWidth, int requestedHeight, int requestedDepth, int requestedRefreshRate) {
-		// Try to find an exact match
-		DisplayMode displayMode = findDisplayModeInternal(displayModes, requestedWidth, requestedHeight, requestedDepth, requestedRefreshRate);
-
-		// Try again, ignoring the requested bit depth
-		if (displayMode == null)
-			displayMode = findDisplayModeInternal(displayModes, requestedWidth, requestedHeight, -1, -1);
-
-		// Try again, and again ignoring the requested bit depth and height
-		if (displayMode == null)
-			displayMode = findDisplayModeInternal(displayModes, requestedWidth, -1, -1, -1);
-
-		// If all else fails try to get any display mode
-		if (displayMode == null)
-			displayMode = findDisplayModeInternal(displayModes, -1, -1, -1, -1);
-
-		return displayMode;
-	}
-
-	private DisplayMode findDisplayModeInternal(DisplayMode[] displayModes, int requestedWidth, int requestedHeight, int requestedDepth, int requestedRefreshRate) {
-		DisplayMode displayModeToUse = null;
-		for (int i = 0; i < displayModes.length; i++) {
-			DisplayMode displayMode = displayModes[i];
-			if ((requestedWidth == -1 || displayMode.getWidth() == requestedWidth) &&
-					(requestedHeight == -1 || displayMode.getHeight() == requestedHeight) &&
-					(requestedHeight == -1 || displayMode.getRefreshRate() == requestedRefreshRate) &&
-					(requestedDepth == -1 || displayMode.getBitDepth() == requestedDepth))
-				displayModeToUse = displayMode;
-		}
-
-		return displayModeToUse;
-	}
 }
 
 class ClientViewRenderer implements GLEventListener, GuiMouseListener, GuiKeyListener {
 	private ClientView3d m_view;
-	private JFrame m_frame;
+	private GLWindow m_glWindow;
 	private Universe m_universe;
 	private Entity m_avatar;
 	private Camera m_avatarCamera;
@@ -234,9 +167,9 @@ class ClientViewRenderer implements GLEventListener, GuiMouseListener, GuiKeyLis
 	private MessagePort m_serverPort;
 	private MessagePacket m_message;
 	
-	public ClientViewRenderer(ClientView3d _view, JFrame _frame) {
+	public ClientViewRenderer(ClientView3d _view, GLWindow _glWindow) {
 		m_view = _view;
-		m_frame = _frame;
+		m_glWindow = _glWindow;
 //		m_universe = _client.getUniverse();
 //		m_avatar = _client.getAvatar();
 		m_avatarCamera = new Camera();
@@ -248,29 +181,29 @@ class ClientViewRenderer implements GLEventListener, GuiMouseListener, GuiKeyLis
 	}
 		
 	public void init(GLAutoDrawable drawable) {
-		GL gl = drawable.getGL();
+		GL2 gl = drawable.getGL().getGL2();
 //		GLU glu = new GLU();
 
 		System.err.println("INIT GL IS: " + gl.getClass().getName());
 
-		gl.glEnable(GL.GL_CULL_FACE);
-		gl.glShadeModel(GL.GL_SMOOTH);              // Enable Smooth Shading
+		gl.glEnable(GL2.GL_CULL_FACE);
+		gl.glShadeModel(GL2.GL_SMOOTH);              // Enable Smooth Shading
 //		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);    // Black Background
 //		gl.glClearDepth(1.0f);                      // Depth Buffer Setup
-		gl.glEnable(GL.GL_DEPTH_TEST);				// Enables Depth Testing
-		gl.glDepthFunc(GL.GL_LEQUAL);				// The Type Of Depth Testing To Do
-		gl.glHint(GL.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST);	// Really Nice Perspective Calculations
-		gl.glEnable(GL.GL_TEXTURE_2D);
-		gl.glEnable(GL.GL_NORMALIZE);
+		gl.glEnable(GL2.GL_DEPTH_TEST);				// Enables Depth Testing
+		gl.glDepthFunc(GL2.GL_LEQUAL);				// The Type Of Depth Testing To Do
+		gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL2.GL_NICEST);	// Really Nice Perspective Calculations
+		gl.glEnable(GL2.GL_TEXTURE_2D);
+		gl.glEnable(GL2.GL_NORMALIZE);
 			
 		// Set up lighting
 		float[] lightAmbient = {0.5f, 0.5f, 0.5f, 1.0f};
 		float[] lightDiffuse = {1.0f, 1.0f, 1.0f, 1.0f};
 		float[] lightPosition = {0.0f, 0.0f, 2.0f, 1.0f};
-		gl.glLightfv(GL.GL_LIGHT1, GL.GL_AMBIENT, lightAmbient, 0);
-		gl.glLightfv(GL.GL_LIGHT1, GL.GL_DIFFUSE, lightDiffuse, 0);
-		gl.glLightfv(GL.GL_LIGHT1, GL.GL_POSITION, lightPosition, 0);
-		gl.glEnable(GL.GL_LIGHT1);
+		gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_AMBIENT, lightAmbient, 0);
+		gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_DIFFUSE, lightDiffuse, 0);
+		gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_POSITION, lightPosition, 0);
+		gl.glEnable(GL2.GL_LIGHT1);
 //		gl.glEnable(GL.GL_LIGHTING);
 
 		m_context = new RenderContext(gl);
@@ -284,27 +217,17 @@ class ClientViewRenderer implements GLEventListener, GuiMouseListener, GuiKeyLis
 		m_infoWindow.setVisible(true);
 		m_screen.add(m_infoWindow);
 
-		drawable.addKeyListener(m_screen);
-		drawable.addMouseListener(m_screen);
-		drawable.addMouseMotionListener(m_screen);
+		m_glWindow.addKeyListener(m_screen);
+		m_glWindow.addMouseListener(m_screen);
 		m_screen.addKeyListener(this);
 		m_screen.addMouseListener(this);
-		
-		try {
-			m_aRobot = new Robot();
-			// Center the mouse pointer
-			m_aRobot.mouseMove(m_frame.getX() + m_frame.getWidth() / 2, m_frame.getY() + m_frame.getHeight() / 2);
-			grabMouse();
-		} catch (AWTException e) {
-			System.err.println(e);
-		}
 		
 //		gl.glTexParameteri(GL.GL_TEXTURE_2D,GL.GL_TEXTURE_MIN_FILTER,GL.GL_NEAREST);
 //		gl.glTexParameteri(GL.GL_TEXTURE_2D,GL.GL_TEXTURE_MAG_FILTER,GL.GL_NEAREST);
 //		gl.glTexParameteri(GL.GL_TEXTURE_2D,GL.GL_TEXTURE_MIN_FILTER,GL.GL_LINEAR);
 //		gl.glTexParameteri(GL.GL_TEXTURE_2D,GL.GL_TEXTURE_MAG_FILTER,GL.GL_LINEAR);
-		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_NEAREST);
-		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR_MIPMAP_NEAREST);
+		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
 
 //		m_universeRenderer = new UniverseRenderer(m_universe, m_avatar);
 //		m_universeRenderer.initRendering(m_context);
@@ -317,18 +240,22 @@ class ClientViewRenderer implements GLEventListener, GuiMouseListener, GuiKeyLis
 		Thread.currentThread().setPriority(Thread.currentThread().getPriority() - 1);
 	}
 
+	public void dispose(GLAutoDrawable drawable) {
+		System.exit(0);
+	}
+
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-		GL gl = drawable.getGL();
-		GLU glu = new GLU();
+		GL2 gl = drawable.getGL().getGL2();
+		GLU glu = new GLUgl2();
 
 		float h = (float) width / (float) height;
 
 		gl.glViewport(0, 0, width, height);
-		gl.glMatrixMode(GL.GL_PROJECTION);
+		gl.glMatrixMode(GL2.GL_PROJECTION);
 
-		System.err.println("GL_VENDOR: " + gl.glGetString(GL.GL_VENDOR));
-		System.err.println("GL_RENDERER: " + gl.glGetString(GL.GL_RENDERER));
-		System.err.println("GL_VERSION: " + gl.glGetString(GL.GL_VERSION));
+		System.err.println("GL_VENDOR: " + gl.glGetString(GL2.GL_VENDOR));
+		System.err.println("GL_RENDERER: " + gl.glGetString(GL2.GL_RENDERER));
+		System.err.println("GL_VERSION: " + gl.glGetString(GL2.GL_VERSION));
 		System.err.println();
 		System.err.println("glLoadTransposeMatrixf() supported: " + gl.isFunctionAvailable("glLoadTransposeMatrixf"));
 		if (!gl.isFunctionAvailable("glLoadTransposeMatrixf")) {
@@ -341,25 +268,25 @@ class ClientViewRenderer implements GLEventListener, GuiMouseListener, GuiKeyLis
 		}
 		glu.gluPerspective(45.0f, h, 0.5, 600.0);
 //		gl.glFrustum(-1.0f, 1.0f, -h, h, 5.0f, 600.0f);
-		gl.glMatrixMode(GL.GL_MODELVIEW);
+		gl.glMatrixMode(GL2.GL_MODELVIEW);
 
 		m_screen.initRendering(m_context);
 	}
 
 	public void display(GLAutoDrawable drawable) {
-		GL gl = drawable.getGL();
+		GL2 gl = drawable.getGL().getGL2();
 
 		m_frameRateCounter.addFrame();
 
-//		handleUniverseFrame();
+		handleUniverseFrame();
 			
 		gl.glLoadIdentity();
 
-		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 
 		gl.glPushMatrix();
 			
-//		m_universeRenderer.render(m_context, m_avatarCamera);
+		m_universeRenderer.render(m_context, m_avatarCamera);
 			
 		gl.glPopMatrix();
 
@@ -375,7 +302,7 @@ class ClientViewRenderer implements GLEventListener, GuiMouseListener, GuiKeyLis
 
 
 	private void renderFrameRate(RenderContext _context, float _fFps) {
-		GL gl = _context.getGl();
+		GL2 gl = _context.getGl().getGL2();
 
 		NumberFormat nf = NumberFormat.getNumberInstance();
 		nf.setMinimumFractionDigits(1);
@@ -384,22 +311,22 @@ class ClientViewRenderer implements GLEventListener, GuiMouseListener, GuiKeyLis
 
 		gl.glPushMatrix();
 		gl.glLoadIdentity();
-		gl.glMatrixMode(GL.GL_PROJECTION);
+		gl.glMatrixMode(GL2.GL_PROJECTION);
 		gl.glPushMatrix ();
 		gl.glLoadIdentity();
  
 		int viewport[] = new int[4];
-		gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
+		gl.glGetIntegerv(GL2.GL_VIEWPORT, viewport, 0);
 		_context.getGlu().gluOrtho2D(0, viewport[2], viewport[3], 0);
-		gl.glDepthFunc(GL.GL_ALWAYS);
+		gl.glDepthFunc(GL2.GL_ALWAYS);
 
 		gl.glColor3f(1, 1, 1);
 		gl.glRasterPos2f(15, 15);
 		_context.getGlut().glutBitmapString(GLUT.BITMAP_HELVETICA_18, "FPS: " + nf.format(f));
  
-		gl.glDepthFunc(GL.GL_LESS);
+		gl.glDepthFunc(GL2.GL_LESS);
 		gl.glPopMatrix();
-		gl.glMatrixMode(GL.GL_MODELVIEW);
+		gl.glMatrixMode(GL2.GL_MODELVIEW);
 		gl.glPopMatrix (); 		
 	}
 
@@ -656,15 +583,12 @@ class ClientViewRenderer implements GLEventListener, GuiMouseListener, GuiKeyLis
 	}
 	
 	private void grabMouse() {
-		// Center the mouse pointer
-		m_aRobot.mouseMove(m_frame.getX() + m_frame.getWidth() / 2, m_frame.getY() + m_frame.getHeight() / 2);
-		m_frame.setCursor(Toolkit.getDefaultToolkit().createCustomCursor(Toolkit.getDefaultToolkit().createImage(""), new Point(0, 0), "empty"));
+		// TODO is this still necessary?
 		m_bGrabMouse = true;
 	}
 	
 	private void releaseMouse() {
-		// Center the mouse pointer
-		m_frame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		// TODO is this still necessary?
 		m_bGrabMouse = false;
 	}
 	
@@ -696,8 +620,8 @@ class ClientViewRenderer implements GLEventListener, GuiMouseListener, GuiKeyLis
 		if (m_bGrabMouse) {
 			double motionDelay = 0.5;
 			
-			int nCenterX = m_frame.getWidth() / 2;
-			int nCenterY = m_frame.getHeight() / 2;
+			int nCenterX = m_glWindow.getWidth() / 2;
+			int nCenterY = m_glWindow.getHeight() / 2;
 			
 			m_fRotY -= (_event.getX() - nCenterX + 4) * motionDelay;
 			m_fRotX -= (_event.getY() - nCenterY + 30) * motionDelay;
@@ -713,7 +637,7 @@ class ClientViewRenderer implements GLEventListener, GuiMouseListener, GuiKeyLis
 			}
 			
 			// Center the mouse pointer
-			m_aRobot.mouseMove(m_frame.getX() + nCenterX, m_frame.getY() + nCenterY);
+			m_aRobot.mouseMove(m_glWindow.getX() + nCenterX, m_glWindow.getY() + nCenterY);
 		}
 	}
 	

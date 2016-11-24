@@ -5,16 +5,16 @@ package games.batoru.entities;
 
 import javax.vecmath.Point3f;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.glu.GLU;
-import javax.media.opengl.glu.GLUquadric;
-import com.sun.opengl.util.GLUT;
-
 import org.codejive.utils4gl.GLColor;
 import org.codejive.utils4gl.RenderContext;
 import org.codejive.utils4gl.RenderObserver;
 import org.codejive.world3d.Entity;
 import org.codejive.world3d.Universe;
+
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.glu.GLU;
+import com.jogamp.opengl.glu.GLUquadric;
+import com.jogamp.opengl.util.gl2.GLUT;
 
 /**
  * @author tako
@@ -37,12 +37,12 @@ public class TreeEntity extends Entity {
 	@Override
 	public void initRendering(RenderContext _context) {
 		if (m_nTreeShapeList == -1) {
-			GL gl = _context.getGl();
+			GL2 gl = _context.getGl();
 			GLU glu = _context.getGlu();
 			GLUT glut = _context.getGlut();
 
 			m_nTreeShapeList = gl.glGenLists(1);
-			gl.glNewList(m_nTreeShapeList, GL.GL_COMPILE);
+			gl.glNewList(m_nTreeShapeList, GL2.GL_COMPILE);
 	
 			gl.glPushMatrix();
 			gl.glColor3f(m_trunkColor.getRed(), m_trunkColor.getGreen(), m_trunkColor.getBlue());
